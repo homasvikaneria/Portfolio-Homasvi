@@ -1,0 +1,2146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PEGASUS_OS :: CORE v9.05</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* ══════════════════════════════════════
+   WIN98 SYSTEM VARIABLES
+══════════════════════════════════════ */
+    :root {
+      --win-bg: #008080;
+      /* classic teal desktop */
+      --silver: #c0c0c0;
+      --silver-dark: #808080;
+      --silver-light: #dfdfdf;
+      --white: #ffffff;
+      --black: #000000;
+      --title-from: #000080;
+      --title-to: #1084d0;
+      --title-inactive: #7b7b7b;
+
+      /* raised 3-D border (Win98 style) */
+      --raised: inset -1px -1px 0 #000, inset 1px 1px 0 #fff, inset -2px -2px 0 var(--silver-dark), inset 2px 2px 0 var(--silver-light);
+      /* sunken 3-D border */
+      --sunken: inset 1px 1px 0 #000, inset -1px -1px 0 #fff, inset 2px 2px 0 var(--silver-dark), inset -2px -2px 0 var(--silver-light);
+      /* button press */
+      --pressed: inset 1px 1px 0 var(--silver-dark), inset -1px -1px 0 var(--silver-light);
+
+      /* terminal colours */
+      --green: #00aa00;
+      --green2: #007700;
+      --dim: #557755;
+      --amber: #aa7700;
+      --red: #cc0000;
+      --blue: #0000cc;
+      --text: #111111;
+      --muted: #444444;
+      --border: #808080;
+
+      --glow: none;
+      --glow-lg: none;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      background: var(--win-bg);
+      font-family: 'Arial', 'MS Sans Serif', sans-serif;
+      font-size: 11px;
+      overflow: hidden;
+      cursor: default;
+    }
+
+    /* hide fancy cursors */
+    #cur,
+    #cur-r {
+      display: none !important;
+    }
+
+    canvas#neural {
+      display: none !important;
+    }
+
+    /* ══════════════════════════════════════
+   DESKTOP ICONS (top-left)
+══════════════════════════════════════ */
+    #desktop-icons {
+      position: fixed;
+      top: 16px;
+      left: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 5;
+    }
+
+    .d-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      width: 64px;
+      cursor: pointer;
+      color: white;
+      text-shadow: 1px 1px 2px #000;
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.3;
+      padding: 4px 2px;
+      border-radius: 2px;
+      user-select: none;
+    }
+
+    .d-icon:hover {
+      background: rgba(0, 0, 128, 0.45);
+      outline: 1px dotted white;
+    }
+
+    .d-icon-img {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    /* ══════════════════════════════════════
+   BOOT SCREEN
+══════════════════════════════════════ */
+    #boot {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 4rem 6rem;
+      transition: opacity .5s;
+    }
+
+    #boot.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .boot-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem;
+      color: #aaa;
+      line-height: 1.8;
+      opacity: 0;
+      transition: opacity .25s;
+    }
+
+    .boot-line.show {
+      opacity: 1;
+    }
+
+    .boot-line.ok::after {
+      content: ' [OK]';
+      color: #00cc00;
+    }
+
+    .boot-line.warn::after {
+      content: ' [WARN]';
+      color: #ccaa00;
+    }
+
+    #boot-bar-wrap {
+      margin-top: 1.5rem;
+      width: 340px;
+      height: 16px;
+      background: #111;
+      border: 2px inset #555;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+
+    #boot-bar-wrap.show {
+      opacity: 1;
+    }
+
+    #boot-bar {
+      height: 100%;
+      width: 0%;
+      background: repeating-linear-gradient(90deg, #00cc00 0px, #00cc00 8px, #004400 8px, #004400 10px);
+      transition: width .05s linear;
+    }
+
+    #boot-pct {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem;
+      color: #00cc00;
+      margin-top: .4rem;
+      opacity: 0;
+    }
+
+    #boot-pct.show {
+      opacity: 1;
+    }
+
+    /* ══════════════════════════════════════
+   MAIN WINDOW — the OS shell
+══════════════════════════════════════ */
+    #os {
+      position: fixed;
+      top: 6px;
+      left: 6px;
+      right: 6px;
+      bottom: 36px;
+      /* leave room for taskbar */
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--raised), 2px 2px 0 #000;
+      opacity: 0;
+      transition: opacity .8s;
+      background: var(--silver);
+    }
+
+    #os.show {
+      opacity: 1;
+    }
+
+    /* ── TITLE BAR ── */
+    #topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 3px 4px 3px 6px;
+      background: linear-gradient(90deg, var(--title-from), var(--title-to));
+      flex-shrink: 0;
+      gap: 6px;
+    }
+
+    .tb-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: white;
+      font-weight: bold;
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tb-icon {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .tb-title {
+      color: white;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: .3px;
+    }
+
+    .tb-title .tb-sep {
+      font-weight: normal;
+      opacity: .7;
+      margin: 0 3px;
+    }
+
+    .tb-right-info {
+      color: rgba(255, 255, 255, .75);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    /* win chrome buttons */
+    .win-btns {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .win-btn {
+      width: 16px;
+      height: 14px;
+      background: var(--silver);
+      box-shadow: var(--raised);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: bold;
+      color: #000;
+      cursor: pointer;
+      user-select: none;
+      flex-shrink: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .win-btn:active {
+      box-shadow: var(--pressed);
+    }
+
+    .win-btn.close:hover {
+      background: #cc0000;
+      color: white;
+    }
+
+    /* ── MENU BAR ── */
+    #menubar {
+      display: flex;
+      align-items: center;
+      padding: 1px 2px;
+      border-bottom: 1px solid var(--silver-dark);
+      background: var(--silver);
+      flex-shrink: 0;
+      gap: 1px;
+    }
+
+    .menu-item {
+      padding: 2px 6px;
+      font-size: 11px;
+      color: #000;
+      cursor: pointer;
+      user-select: none;
+      border: 1px solid transparent;
+    }
+
+    .menu-item:hover {
+      background: var(--title-from);
+      color: white;
+      border-color: var(--title-from);
+    }
+
+    .menu-item:first-child {
+      /* File underline */
+    }
+
+    /* ── TOOLBAR ── */
+    #toolbar {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px 4px;
+      border-bottom: 1px solid var(--silver-dark);
+      background: var(--silver);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    #toolbar .sep {
+      width: 1px;
+      height: 22px;
+      background: var(--silver-dark);
+      margin: 0 3px;
+      box-shadow: 1px 0 0 #fff;
+      flex-shrink: 0;
+    }
+
+    .tb-btn {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      background: var(--silver);
+      box-shadow: var(--raised);
+      font-size: 10px;
+      color: #000;
+      cursor: pointer;
+      user-select: none;
+      min-width: 48px;
+      height: 28px;
+      gap: 1px;
+      border: none;
+      font-family: Arial, sans-serif;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .tb-btn:hover {
+      background: #d8d8d8;
+    }
+
+    .tb-btn:active {
+      box-shadow: var(--pressed);
+      transform: translate(1px, 1px);
+    }
+
+    .tb-btn.active {
+      box-shadow: var(--sunken);
+      background: #d0d0d0;
+    }
+
+    .tb-btn.danger {
+      color: #880000;
+    }
+
+    .tb-btn .tb-btn-icon {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .tb-btn .tb-btn-label {
+      font-size: 9px;
+      line-height: 1;
+    }
+
+    /* ── ADDRESS BAR ── */
+    #addrbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 4px;
+      border-bottom: 1px solid var(--silver-dark);
+      background: var(--silver);
+      flex-shrink: 0;
+    }
+
+    .addr-label {
+      font-size: 11px;
+      font-weight: bold;
+      color: #000;
+      white-space: nowrap;
+      padding: 0 4px;
+    }
+
+    .addr-field {
+      flex: 1;
+      height: 20px;
+      background: white;
+      box-shadow: var(--sunken);
+      padding: 0 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #000000;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .addr-go {
+      padding: 2px 8px;
+      height: 20px;
+      background: var(--silver);
+      box-shadow: var(--raised);
+      font-size: 11px;
+      cursor: pointer;
+      border: none;
+      font-family: Arial, sans-serif;
+    }
+
+    .addr-go:active {
+      box-shadow: var(--pressed);
+    }
+
+    /* ── MAIN CONTENT AREA ── */
+    #content-area {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── LEFT PANEL (was sidebar) ── */
+    #sidebar {
+      width: 170px;
+      flex-shrink: 0;
+      background: var(--silver-light);
+      border-right: 1px solid var(--silver-dark);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    #sidebar::-webkit-scrollbar {
+      width: 16px;
+      background: var(--silver);
+    }
+
+    #sidebar::-webkit-scrollbar-track {
+      background: var(--silver);
+      box-shadow: var(--sunken);
+    }
+
+    #sidebar::-webkit-scrollbar-thumb {
+      background: var(--silver);
+      box-shadow: var(--raised);
+    }
+
+    #sidebar::-webkit-scrollbar-button {
+      background: var(--silver);
+      box-shadow: var(--raised);
+      height: 16px;
+    }
+
+    .sb-section {
+      padding: 4px 0;
+    }
+
+    .sb-label {
+      font-size: 10px;
+      font-weight: bold;
+      color: var(--title-from);
+      padding: 4px 8px 2px;
+      border-bottom: 1px solid var(--silver-dark);
+      margin-bottom: 2px;
+      background: linear-gradient(180deg, var(--silver) 0%, var(--silver-light) 100%);
+    }
+
+    .sb-divider {
+      height: 1px;
+      background: var(--silver-dark);
+      margin: 4px 0;
+      box-shadow: 0 1px 0 #fff;
+    }
+
+    .cmd-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      width: 100%;
+      padding: 3px 8px;
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: #000;
+      background: transparent;
+      border: 1px solid transparent;
+      text-align: left;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cmd-btn::before {
+      content: '📄 ';
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .cmd-btn:hover {
+      background: var(--title-from);
+      color: white;
+      border-color: var(--title-from);
+    }
+
+    .cmd-btn:hover::before {
+      filter: brightness(2);
+    }
+
+    .cmd-btn.active {
+      background: #000080;
+      color: white;
+    }
+
+    .cmd-btn.active::before {
+      filter: brightness(2);
+    }
+
+    .cmd-btn.danger::before {
+      content: '⚠️ ';
+    }
+
+    .cmd-btn.danger {
+      color: #880000;
+    }
+
+    .cmd-btn.danger:hover {
+      background: #880000;
+      color: white;
+    }
+
+    .sb-info {
+      padding: 8px;
+      font-size: 10px;
+      color: var(--muted);
+      border: 1px solid var(--silver-dark);
+      margin: 4px;
+      background: var(--white);
+      box-shadow: var(--sunken);
+      line-height: 1.7;
+    }
+
+    .sb-info b {
+      color: var(--title-from);
+    }
+
+    /* ── TERMINAL PANE ── */
+    #terminal-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: white;
+      box-shadow: var(--sunken);
+      margin: 4px;
+      border: 2px solid;
+      border-color: var(--silver-dark) var(--silver-light) var(--silver-light) var(--silver-dark);
+    }
+
+    #terminal {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 8px 12px 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: white;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    #terminal::-webkit-scrollbar {
+      width: 16px;
+      background: var(--silver);
+    }
+
+    #terminal::-webkit-scrollbar-track {
+      background: var(--silver);
+      box-shadow: inset 0 0 0 1px var(--silver-dark);
+    }
+
+    #terminal::-webkit-scrollbar-thumb {
+      background: var(--silver);
+      box-shadow: var(--raised);
+    }
+
+    #terminal::-webkit-scrollbar-button {
+      background: var(--silver);
+      box-shadow: var(--raised);
+      height: 16px;
+    }
+
+    /* hint */
+    #hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      padding: 2px 12px;
+      background: var(--silver-light);
+      border-top: 1px solid var(--silver-dark);
+      flex-shrink: 0;
+    }
+
+    /* ── INPUT LINE ── */
+    #input-line {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px 5px;
+      border-top: 2px solid var(--silver-dark);
+      background: var(--silver-light);
+      flex-shrink: 0;
+    }
+
+    .input-prompt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #000080;
+      white-space: nowrap;
+      user-select: none;
+      font-weight: bold;
+    }
+
+    #cmd-input {
+      flex: 1;
+      height: 20px;
+      background: white;
+      box-shadow: var(--sunken);
+      border: none;
+      outline: none;
+      padding: 0 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #000;
+      caret-color: #000080;
+    }
+
+    #cmd-input::placeholder {
+      color: #aaa;
+    }
+
+    .run-btn {
+      padding: 2px 10px;
+      height: 22px;
+      background: var(--silver);
+      box-shadow: var(--raised);
+      font-size: 11px;
+      cursor: pointer;
+      border: none;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+    }
+
+    .run-btn:active {
+      box-shadow: var(--pressed);
+      transform: translate(1px, 1px);
+    }
+
+    /* ── STATUS BAR ── */
+    #statusbar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      height: 20px;
+      border-top: 1px solid var(--silver-dark);
+      background: var(--silver);
+      padding: 0;
+      gap: 0;
+    }
+
+    .sb-panel {
+      padding: 0 8px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      font-size: 10px;
+      color: #000;
+      border-right: 1px solid var(--silver-dark);
+      box-shadow: inset 1px 1px 0 var(--silver-dark), inset -1px -1px 0 var(--silver-light);
+    }
+
+    .sb-panel:last-child {
+      border-right: none;
+      flex: 1;
+    }
+
+    #sb-cmd {
+      color: var(--title-from);
+      font-weight: bold;
+    }
+
+    #sb-status {
+      color: green;
+    }
+
+    /* ── TASKBAR ── */
+    #taskbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 34px;
+      background: var(--silver);
+      border-top: 2px solid white;
+      box-shadow: 0 -1px 0 var(--silver-dark);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 4px;
+      z-index: 100;
+    }
+
+    #start-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: var(--silver);
+      box-shadow: var(--raised);
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      height: 24px;
+      border: none;
+      font-family: Arial, sans-serif;
+    }
+
+    #start-btn:active {
+      box-shadow: var(--pressed);
+    }
+
+    #start-btn .start-icon {
+      font-size: 16px;
+    }
+
+    .taskbar-sep {
+      width: 2px;
+      height: 26px;
+      background: var(--silver-dark);
+      box-shadow: 1px 0 0 #fff;
+      margin: 0 2px;
+    }
+
+    .taskbar-program {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      height: 24px;
+      background: var(--silver);
+      box-shadow: var(--sunken);
+      font-size: 11px;
+      cursor: pointer;
+      border: none;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      min-width: 120px;
+    }
+
+    .taskbar-program .tp-icon {
+      font-size: 14px;
+    }
+
+    .sys-tray {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 6px;
+      height: 26px;
+      box-shadow: var(--sunken);
+      font-size: 11px;
+      color: #000;
+      background: var(--silver);
+    }
+
+    #clock {
+      font-family: Arial;
+      font-size: 11px;
+    }
+
+    /* ── TERMINAL LINE TYPES ── */
+    .t-line {
+      font-size: 12px;
+      line-height: 1.75;
+      color: #111;
+      margin-bottom: 0;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      width: 100%;
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .t-line.prompt {
+      color: #000080;
+      font-weight: bold;
+    }
+
+    .t-line.prompt::before {
+      content: 'peagasus@core:~$ ';
+    }
+
+    .t-line.comment {
+      color: #666;
+      font-style: italic;
+    }
+
+    .t-line.heading {
+      color: #000080;
+      font-weight: 700;
+      font-size: 13px;
+      margin: .5rem 0 .1rem;
+      border-bottom: 1px solid #cccccc;
+      padding-bottom: 2px;
+    }
+
+    .t-line.subheading {
+      color: #880000;
+      font-size: 12px;
+      margin: .35rem 0 .05rem;
+      font-weight: bold;
+    }
+
+    .t-line.success {
+      color: green;
+    }
+
+    .t-line.warn {
+      color: #886600;
+    }
+
+    .t-line.err {
+      color: var(--red);
+      font-weight: bold;
+    }
+
+    .t-line.blank {
+      height: .4rem;
+    }
+
+    .t-line.blue {
+      color: var(--blue);
+    }
+
+    .t-line b {
+      color: #000080;
+      font-weight: 700;
+    }
+
+    .t-line .hi {
+      color: #880000;
+    }
+
+    .t-line .lo {
+      color: #888;
+    }
+
+    .t-line .red {
+      color: var(--red);
+    }
+
+    .t-line .bl {
+      color: var(--blue);
+    }
+
+    .t-line .vl {
+      color: #800080;
+    }
+
+    .t-cursor {
+      display: inline-block;
+      width: 7px;
+      height: 13px;
+      background: #000080;
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0
+      }
+    }
+
+    /* ── PROGRESS BARS ── */
+    .prog-row {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      margin: .1rem 0;
+    }
+
+    .prog-label {
+      font-size: 11px;
+      color: #555;
+      width: 130px;
+      flex-shrink: 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .prog-bar {
+      flex: 1;
+      height: 18px;
+      background: white;
+      box-shadow: var(--sunken);
+      position: relative;
+      max-width: 200px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: repeating-linear-gradient(-45deg,
+          #000080 0px, #000080 8px,
+          #3399ff 8px, #3399ff 16px);
+      transition: width 1.2s ease;
+      width: 0;
+    }
+
+    .prog-val {
+      font-size: 11px;
+      color: #000080;
+      font-weight: bold;
+      width: 40px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── PROJECT CARDS ── */
+    .proj-inline {
+      border: 2px solid;
+      border-color: var(--silver-light) var(--silver-dark) var(--silver-dark) var(--silver-light);
+      padding: .4rem .7rem;
+      margin: .3rem 0;
+      background: var(--silver-light);
+      transition: background .1s;
+    }
+
+    .proj-inline:hover {
+      background: white;
+    }
+
+    .proj-inline .p-name {
+      color: #000080;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .proj-inline .p-tag {
+      font-size: 10px;
+      color: #666;
+      margin-bottom: .2rem;
+    }
+
+    .proj-inline .p-desc {
+      font-size: 11px;
+      color: #222;
+      line-height: 1.7;
+    }
+
+    .proj-inline .p-stack {
+      font-size: 10px;
+      color: #888;
+      margin-top: .2rem;
+    }
+
+    /* ── SKILL PILLS ── */
+    .skill-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: white;
+      border: 1px solid var(--silver-dark);
+      box-shadow: var(--raised);
+      padding: .1rem .4rem;
+      margin: .1rem;
+      font-size: 10px;
+      color: #000;
+      vertical-align: middle;
+      font-family: Arial, sans-serif;
+    }
+
+    .skill-pill img {
+      width: 12px;
+      height: 12px;
+      object-fit: contain;
+    }
+
+    /* ── PROGRESS BAR LABEL FIX ── */
+    .prog-bar::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      color: white;
+      mix-blend-mode: difference;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* ── RESIZE HANDLE (cosmetic) ── */
+    #os::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 14px;
+      height: 14px;
+      background: repeating-linear-gradient(-45deg,
+          transparent, transparent 2px,
+          var(--silver-dark) 2px, var(--silver-dark) 3px);
+      cursor: se-resize;
+    }
+
+    /* mobile */
+    @media(max-width:768px) {
+      #os {
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        bottom: 32px;
+      }
+
+      #sidebar {
+        width: 120px;
+      }
+
+      .tb-right-info {
+        display: none;
+      }
+
+      #menubar {
+        display: none;
+      }
+
+      #addrbar {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- no neural canvas, no custom cursors -->
+  <div id="cur" style="display:none"></div>
+  <div id="cur-r" style="display:none"></div>
+  <canvas id="neural" style="display:none"></canvas>
+
+  <!-- DESKTOP ICONS -->
+  <div id="desktop-icons">
+    <div class="d-icon" onclick="alert('My Computer\n\nC:\\ PEGASUS_OS\nD:\\ PROJECTS\nE:\\ EXPERIENCE')">
+      <div class="d-icon-img">🖥️</div>
+      <span>My Computer</span>
+    </div>
+    <div class="d-icon" onclick="alert('Recycle Bin\n\n(empty)')">
+      <div class="d-icon-img">🗑️</div>
+      <span>Recycle Bin</span>
+    </div>
+    <div class="d-icon" onclick="window.open('https://github.com/JVSHOMASVI','_blank')">
+      <div class="d-icon-img">🌐</div>
+      <span>GitHub</span>
+    </div>
+  </div>
+
+  <!-- BOOT -->
+  <div id="boot">
+    <div id="boot-lines"></div>
+    <div id="boot-bar-wrap">
+      <div id="boot-bar"></div>
+    </div>
+    <div id="boot-pct">0%</div>
+  </div>
+
+  <!-- MAIN WINDOW -->
+  <div id="os">
+
+    <!-- TITLE BAR -->
+    <div id="topbar">
+      <div class="tb-left">
+        <span class="tb-icon">🖥️</span>
+        <span class="tb-title">
+          PEGASUS_OS
+          <span class="tb-sep">—</span>
+          CORE v9.05
+        </span>
+      </div>
+      <div class="tb-right-info">HYD, IN &nbsp;|&nbsp; CSE '26 &nbsp;|&nbsp; node <span id="uptime"
+          style="color:white;font-weight:bold;"></span></div>
+      <div class="win-btns">
+        <div class="win-btn" title="Minimize">_</div>
+        <div class="win-btn" title="Maximize">□</div>
+        <div class="win-btn close" title="Close">✕</div>
+      </div>
+    </div>
+
+    <!-- MENU BAR -->
+    <div id="menubar">
+      <div class="menu-item">File</div>
+      <div class="menu-item">Edit</div>
+      <div class="menu-item">View</div>
+      <div class="menu-item">Go</div>
+      <div class="menu-item">Favorites</div>
+      <div class="menu-item">Help</div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div id="toolbar">
+      <button class="tb-btn" data-cmd="whoami" title="whoami">
+        <span class="tb-btn-icon">👤</span>
+        <span class="tb-btn-label">whoami</span>
+      </button>
+      <button class="tb-btn" data-cmd="ls --experience" title="Experience">
+        <span class="tb-btn-icon">💼</span>
+        <span class="tb-btn-label">experience</span>
+      </button>
+      <button class="tb-btn" data-cmd="ls --projects" title="Projects">
+        <span class="tb-btn-icon">📁</span>
+        <span class="tb-btn-label">projects</span>
+      </button>
+      <button class="tb-btn" data-cmd="cat skills.txt" title="Skills">
+        <span class="tb-btn-icon">⚙️</span>
+        <span class="tb-btn-label">skills</span>
+      </button>
+      <button class="tb-btn" data-cmd="./open-source" title="Open Source">
+        <span class="tb-btn-icon">🔓</span>
+        <span class="tb-btn-label">open-source</span>
+      </button>
+      <div class="sep"></div>
+      <button class="tb-btn" data-cmd="cat about.txt" title="About">
+        <span class="tb-btn-icon">ℹ️</span>
+        <span class="tb-btn-label">about</span>
+      </button>
+      <button class="tb-btn" data-cmd="cat contact.txt" title="Contact">
+        <span class="tb-btn-icon">📧</span>
+        <span class="tb-btn-label">contact</span>
+      </button>
+      <div class="sep"></div>
+      <button class="tb-btn" data-cmd="open --resume" title="Resume">
+        <span class="tb-btn-icon">📄</span>
+        <span class="tb-btn-label">resume</span>
+      </button>
+      <button class="tb-btn" data-cmd="open --github" title="GitHub">
+        <span class="tb-btn-icon">🐙</span>
+        <span class="tb-btn-label">github</span>
+      </button>
+      <button class="tb-btn" data-cmd="open --linkedin" title="LinkedIn">
+        <span class="tb-btn-icon">🔗</span>
+        <span class="tb-btn-label">linkedin</span>
+      </button>
+      <div class="sep"></div>
+      <button class="tb-btn danger" data-cmd="sudo" title="sudo">
+        <span class="tb-btn-icon">🔑</span>
+        <span class="tb-btn-label">sudo</span>
+      </button>
+      <button class="tb-btn" data-cmd="help" title="help">
+        <span class="tb-btn-icon">❓</span>
+        <span class="tb-btn-label">help</span>
+      </button>
+    </div>
+
+    <!-- ADDRESS BAR -->
+    <div id="addrbar">
+      <div class="addr-label">Address</div>
+      <div class="addr-field" id="addr-display">C:\PEGASUS_OS\terminal</div>
+      <button class="addr-go">Go</button>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div id="content-area">
+
+      <!-- SIDEBAR / EXPLORER PANE -->
+      <div id="sidebar">
+        <div class="sb-section">
+          <div class="sb-label">📂 Commands</div>
+          <button class="cmd-btn" data-cmd="whoami">whoami</button>
+          <button class="cmd-btn" data-cmd="ls --experience">ls --experience</button>
+          <button class="cmd-btn" data-cmd="ls --projects">ls --projects</button>
+          <button class="cmd-btn" data-cmd="cat skills.txt">cat skills.txt</button>
+          <button class="cmd-btn" data-cmd="./open-source">./open-source</button>
+          <button class="cmd-btn" data-cmd="cat about.txt">cat about.txt</button>
+          <button class="cmd-btn" data-cmd="cat contact.txt">cat contact.txt</button>
+          <button class="cmd-btn danger" data-cmd="sudo">sudo ⚠</button>
+          <button class="cmd-btn" data-cmd="help">help</button>
+        </div>
+        <div class="sb-divider"></div>
+        <div class="sb-section">
+          <div class="sb-label">🔗 Links</div>
+          <button class="cmd-btn" data-cmd="open --resume">open --resume</button>
+          <button class="cmd-btn" data-cmd="open --github">open --github</button>
+          <button class="cmd-btn" data-cmd="open --linkedin">open --linkedin</button>
+          <button class="cmd-btn" data-cmd="open --email">open --email</button>
+        </div>
+        <div class="sb-divider"></div>
+        <div class="sb-info">
+          <b>HOMASVI</b><br>
+          B.Tech CSE<br>
+          VNRVJIET<br>
+          CGPA 9.05 / 10<br>
+          '26 · HYD, IN
+        </div>
+      </div>
+
+      <!-- TERMINAL PANE -->
+      <div id="terminal-wrap">
+        <div id="terminal"></div>
+        <div id="hint">// type a command or click sidebar · Tab=autocomplete · ↑↓=history</div>
+        <div id="input-line">
+          <span class="input-prompt">pegasus@core:~$&nbsp;</span>
+          <input id="cmd-input" type="text" placeholder="type a command..." autocomplete="off" spellcheck="false" />
+          <button class="run-btn"
+            onclick="document.getElementById('cmd-input').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}))">Run
+            ▶</button>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+
+    <!-- STATUS BAR -->
+    <div id="statusbar">
+      <div class="sb-panel"><span id="sb-cmd">READY</span></div>
+      <div class="sb-panel">PEGASUS_OS :: CORE v9.05</div>
+      <div class="sb-panel">CSE2028</div>
+      <div class="sb-panel">ALL SYSTEMS NOMINAL</div>
+      <div class="sb-panel" style="flex:1"><span id="sb-status">● ONLINE</span></div>
+    </div>
+
+  </div><!-- /os -->
+
+  <!-- TASKBAR -->
+  <div id="taskbar">
+    <button id="start-btn">
+      <span class="start-icon">🪟</span>
+      <span>Start</span>
+    </button>
+    <div class="taskbar-sep"></div>
+    <button class="taskbar-program">
+      <span class="tp-icon">🖥️</span>
+      PEGASUS_OS — Terminal
+    </button>
+    <div class="sys-tray">
+      <span>🔊</span>
+      <span>🌐</span>
+      <div id="clock">00:00:00</div>
+    </div>
+  </div>
+
+
+  <script>
+    /* ═══════════════════════════════════════════════
+       CURSOR
+    ═══════════════════════════════════════════════ */
+    const cur = document.getElementById('cur');
+    const curR = document.getElementById('cur-r');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cur.style.left = mx - 5 + 'px'; cur.style.top = my - 5 + 'px';
+    });
+    (function animR() {
+      rx += (mx - rx - 14) * .13; ry += (my - ry - 14) * .13;
+      curR.style.left = rx + 'px'; curR.style.top = ry + 'px';
+      requestAnimationFrame(animR);
+    })();
+    document.querySelectorAll('button,a').forEach(el => {
+      el.addEventListener('mouseenter', () => { cur.style.transform = 'scale(2.5)'; });
+      el.addEventListener('mouseleave', () => { cur.style.transform = ''; });
+    });
+
+    /* ═══════════════════════════════════════════════
+       NEURAL CANVAS
+    ═══════════════════════════════════════════════ */
+    (function () {
+      /* canvas not visible in Win98 mode — hide it */
+      document.getElementById('neural').style.display = 'none';
+    })();
+
+    /* ═══════════════════════════════════════════════
+       CLOCK & UPTIME
+    ═══════════════════════════════════════════════ */
+    function updateUptime() {
+      const now = new Date();
+      const days = Math.floor((now - new Date('2026-01-01')) / 86400000);
+      document.getElementById('uptime').textContent = `#${String(days < 0 ? 0 : days).padStart(4, '0')}`;
+    }
+    updateUptime();
+    setInterval(updateUptime, 60000);
+
+    function tick() {
+      const d = new Date();
+      document.getElementById('clock').textContent = [d.getHours(), d.getMinutes(), d.getSeconds()].map(v => String(v).padStart(2, '0')).join(':');
+    }
+    tick(); setInterval(tick, 1000);
+
+    /* ═══════════════════════════════════════════════
+       BOOT SEQUENCE
+    ═══════════════════════════════════════════════ */
+    const bootLines = [
+      { t: 'BIOS v9.05 initialized — PEGASUS_OS :: CORE', cls: 'ok' },
+      { t: 'Loading kernel: pegasus-sys-4.1.0 ...', cls: 'ok' },
+      { t: 'Mounting filesystem: /experience /projects /skills', cls: 'ok' },
+      { t: 'Bootstrapping Kubernetes context: stack-core-cluster', cls: 'ok' },
+      { t: 'Rust compiler: v1.83.0 — linking systems modules', cls: 'ok' },
+      { t: 'Spring Boot application context: loaded (0.9s)', cls: 'ok' },
+      { t: 'AWS credentials: EC2 · S3 · Lambda — verified', cls: 'ok' },
+      { t: 'DRDO-IRDE grant modules: DFTM/034 — active', cls: 'ok' },
+      { t: 'Emerson Agentic AI service: session-isolated backend ONLINE', cls: 'ok' },
+      { t: 'RAG pipeline: LangChain + FAISS — indexed', cls: 'ok' },
+      { t: 'Docker daemon: running — 12 containers healthy', cls: 'ok' },
+      { t: 'Grafana observability stack: Prometheus scraping', cls: 'ok' },
+      { t: 'Open-source contributions: NGAOpenData · adenhq · Roboflow', cls: 'ok' },
+      { t: 'All systems nominal. Booting desktop ...', cls: '' },
+    ];
+
+    async function runBoot() {
+      const wrap = document.getElementById('boot-lines');
+      const bar = document.getElementById('boot-bar');
+      const pct = document.getElementById('boot-pct');
+      const barWrap = document.getElementById('boot-bar-wrap');
+      barWrap.classList.add('show'); pct.classList.add('show');
+      for (let i = 0; i < bootLines.length; i++) {
+        const div = document.createElement('div');
+        div.className = 'boot-line ' + (bootLines[i].cls || '');
+        div.textContent = bootLines[i].t;
+        wrap.appendChild(div);
+        await sleep(20); div.classList.add('show');
+        const p = Math.round(((i + 1) / bootLines.length) * 100);
+        bar.style.width = p + '%'; pct.textContent = p + '%';
+        await sleep(i === bootLines.length - 1 ? 400 : 110);
+      }
+      await sleep(500);
+      document.getElementById('boot').classList.add('hide');
+      document.getElementById('os').classList.add('show');
+      document.getElementById('cmd-input').focus({ preventScroll: true });
+      await sleep(800);
+      runCommand('whoami', true);
+    }
+
+    /* ═══════════════════════════════════════════════
+       TERMINAL ENGINE
+    ═══════════════════════════════════════════════ */
+    const term = document.getElementById('terminal');
+    let busy = false;
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function addLine(text = '', cls = '', delay = 0) {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          const d = document.createElement('div');
+          d.className = 't-line ' + (cls || '');
+          d.innerHTML = text;
+          term.appendChild(d);
+          term.scrollTop = term.scrollHeight;
+          resolve(d);
+        }, delay);
+      });
+    }
+
+    async function typeText(text, cls = '', speed = 18) {
+      const d = document.createElement('div');
+      d.className = 't-line ' + (cls || '');
+      term.appendChild(d);
+      for (let i = 0; i <= text.length; i++) {
+        d.textContent = text.slice(0, i);
+        term.scrollTop = term.scrollHeight;
+        await sleep(speed);
+      }
+      return d;
+    }
+
+    async function addPrompt(cmd) {
+      const d = document.createElement('div');
+      d.className = 't-line prompt';
+      term.appendChild(d);
+      for (let i = 0; i <= cmd.length; i++) {
+        d.textContent = cmd.slice(0, i);
+        await sleep(28);
+      }
+      term.scrollTop = term.scrollHeight;
+    }
+
+    async function addBlank() { await addLine('', 'blank'); }
+
+    function skillTag(name, logoUrl) {
+      return `<span class="skill-pill"><img src="${logoUrl}" alt="${name}"> ${name}</span>`;
+    }
+
+    const DEVICON = 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons';
+    const LOGOS = {
+      'C': `${DEVICON}/c/c-original.svg`,
+      'C++': `${DEVICON}/cplusplus/cplusplus-original.svg`,
+      'Python': `${DEVICON}/python/python-original.svg`,
+      'Java': `${DEVICON}/java/java-original.svg`,
+      'JavaScript': `${DEVICON}/javascript/javascript-original.svg`,
+      'Rust': `${DEVICON}/rust/rust-original.svg`,
+      'Bash': `${DEVICON}/bash/bash-original.svg`,
+      'Spring Boot': `${DEVICON}/spring/spring-original.svg`,
+      'React': `${DEVICON}/react/react-original.svg`,
+      'Svelte': `${DEVICON}/svelte/svelte-original.svg`,
+      'Express': `${DEVICON}/express/express-original.svg`,
+      'FastAPI': `${DEVICON}/fastapi/fastapi-original.svg`,
+      'Kafka': `${DEVICON}/apachekafka/apachekafka-original.svg`,
+      'PyTorch': `${DEVICON}/pytorch/pytorch-original.svg`,
+      'AWS': `${DEVICON}/amazonwebservices/amazonwebservices-plain-wordmark.svg`,
+      'Docker': `${DEVICON}/docker/docker-original.svg`,
+      'Kubernetes': `${DEVICON}/kubernetes/kubernetes-original.svg`,
+      'Grafana': `${DEVICON}/grafana/grafana-original.svg`,
+      'Terraform': `${DEVICON}/terraform/terraform-original.svg`,
+      'GraphQL': `${DEVICON}/graphql/graphql-plain.svg`,
+      'MySQL': `${DEVICON}/mysql/mysql-original.svg`,
+      'MongoDB': `${DEVICON}/mongodb/mongodb-original.svg`,
+      'Redis': `${DEVICON}/redis/redis-original.svg`,
+      'PostgreSQL': `${DEVICON}/postgresql/postgresql-original.svg`,
+      'LangChain': `${DEVICON}/python/python-original.svg`,
+      'MariaDB': `${DEVICON}/mariadb/mariadb-original.svg`,
+    };
+
+    /* ── COMMANDS ── */
+    const COMMANDS = {
+
+      'sudo': async () => {
+        if (window._sudoGranted) {
+          await addBlank();
+          await addLine('<span style="color:var(--green)">sudo: already have root access. What more do you want?</span>');
+          return;
+        }
+        await addBlank();
+        await addLine('<span style="color:var(--muted)">[sudo] password for adithya: Type it below</span>');
+        await addLine('<span style="color:var(--dim)">hint: <b>you</b> already know it.</span>', 'comment');
+        await addLine('Ctrl+C to cancel.', 'comment');
+        await sleep(400);
+        passwordMode = true;
+        passwordAttempts = 0;
+        input.type = 'password';
+        input.placeholder = 'enter password...';
+        busy = false;  // ← must release before returning so input works
+        input.focus({ preventScroll: true });
+        // don't await anything after — return immediately
+      },
+
+      'rm -rf': async () => {
+        await addBlank();
+        await addLine('executing rm -rf /*', 'comment');
+        await sleep(300);
+        const logs = [
+          'rm: descending into /',
+          'rm: descending into /home/adithya',
+          'rm: removing /projects/everything',
+          'rm: removing /memories/good-ones',
+          'rm: removing /sanity',
+          'rm: removing /will-to-live',
+        ];
+        for (const l of logs) { await addLine(l, 'comment'); await sleep(120); }
+        await addLine('<span style="color:var(--red)">rm: removed 2,847 files. all of them. congrats.</span>');
+        await sleep(700);
+
+        for (let i = 0; i < 8; i++) { term.style.opacity = i % 2 === 0 ? '0.1' : '1'; await sleep(60); }
+        term.style.opacity = '1';
+        await sleep(400);
+
+        // destroy the UI
+        document.getElementById('sidebar').style.transition = 'opacity 0.6s';
+        document.getElementById('sidebar').style.opacity = '0';
+        document.getElementById('topbar').style.transition = 'opacity 0.6s';
+        document.getElementById('topbar').style.opacity = '0';
+        document.getElementById('statusbar').style.transition = 'opacity 0.6s';
+        document.getElementById('statusbar').style.opacity = '0';
+        await sleep(700);
+        document.getElementById('sidebar').style.display = 'none';
+        document.getElementById('topbar').style.display = 'none';
+        document.getElementById('statusbar').style.display = 'none';
+
+        // expand terminal to full screen
+        // Win98 mode: just hide sidebar
+        document.getElementById('sidebar').style.display = 'none';
+        // gridTemplateRows not used in win98 mode
+        document.getElementById('sidebar').style.transition = '';
+        document.getElementById('sidebar').style.opacity = '';
+        document.querySelectorAll('.cmd-btn, .tb-btn').forEach(b => b.disabled = true);
+        window._destroyed = true;
+        window._sudoGranted = false;  // ← add this — revoke after use
+
+        term.innerHTML = '';
+        await addBlank();
+        await typeText("What made you think that was a good idea? Because I said so?", 'err', 28);
+        await sleep(700);
+        await typeText("Now everything is ruined.", 'err', 32);
+        await sleep(500);
+        await addBlank();
+        await addLine('<span style="color:var(--dim)">messiah@pegasus-core:$ ~ help</span>');
+        await sleep(400);
+        await addLine('maybe restarting your browser will fix this.', 'comment');
+        await sleep(600);
+        await addLine('<span style="color:var(--dim)">...or maybe you can <b>save</b> this wihtout a restart. just a thought.</span>');
+        await addBlank();
+        hintEl.textContent = '// system compromised — only: save';
+      },
+
+      'save': async () => {
+        term.innerHTML = '';
+        await addBlank();
+        await addLine('attempting recovery...', 'comment');
+        await sleep(500);
+        const restores = ['/sanity', '/memories/good-ones', '/projects/everything', '/will-to-live'];
+        for (const r of restores) {
+          await addLine(`restoring ${r} ... <span style="color:#008000">ok</span>`, 'comment');
+          await sleep(300);
+        }
+        await sleep(200);
+
+        // restore UI
+        document.getElementById('topbar').style.display = '';
+        document.getElementById('sidebar').style.display = '';
+        document.getElementById('statusbar').style.display = '';
+        await sleep(100);
+        document.getElementById('topbar').style.opacity = '1';
+        document.getElementById('sidebar').style.opacity = '1';
+        document.getElementById('statusbar').style.opacity = '1';
+        document.getElementById('sidebar').style.display = '';
+        // restore rows
+        document.querySelectorAll('.cmd-btn, .tb-btn').forEach(b => b.disabled = false);
+        tauntIdx = 0;
+        window._destroyed = false;
+
+        await addLine('<span style="color:#008000">system restored. all 2,847 files recovered.</span>');
+        await sleep(400);
+        await addLine('<span style="color:#9b8b8b"> Congratulations! You unlocked the Easter Egg!</span>', 'comment');
+        await addLine('Thanks for trying it out!!', 'comment');
+        await addBlank();
+        hintEl.textContent = '// type a command below or click sidebar  ·  tab to autocomplete  ·  ↑↓ history';
+      },
+
+      'whoami': async () => {
+        term.innerHTML = '';
+        await addBlank();
+        const box = document.createElement('div');
+        box.style.cssText = 'border:1px solid rgba(0,128,0,0.3);padding:.55rem 1.1rem;margin:.2rem 0;display:inline-block;font-size:.72rem;color:var(--muted);letter-spacing:.5px;';
+        box.innerHTML = 'V S Homasvi Kaneria &nbsp;<span style="color:var(--dim)">·</span>&nbsp; AI &amp; Systems Engineer';
+        term.appendChild(box);
+        term.scrollTop = term.scrollHeight;
+        await addBlank();
+
+        // set up image before typing starts — opacity 0, no transition yet
+        const bg = document.createElement('img');
+        bg.src = 'walter.png';
+        bg.style.cssText = `
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:420px; height:auto;
+      opacity:0;
+      pointer-events:none;
+      z-index:0; user-select:none;
+      filter: blur(0.5px) grayscale(100%);
+      transition: opacity 1.8s ease;
+    `;
+        term.style.position = 'relative';
+        term.appendChild(bg);
+
+        // midpoint of "I am the one who codes." at 22ms/char = ~260ms
+        setTimeout(() => { bg.style.opacity = '0.045'; }, 260);
+
+        await typeText("I am not the one who types, Skyler. I am the one who codes", '', 22);
+
+        // fade out after 8s
+        setTimeout(() => { bg.style.transition = 'opacity 3s ease'; bg.style.opacity = '0'; }, 8500);
+        setTimeout(() => { bg.remove(); }, 11000);
+
+        await sleep(600);
+        await typeText("Now... Say my name.", '', 75);
+        await sleep(500);
+        await typeText("Homasvi Kaneria", 'heading', 50); // continue on same line by putting ... after it
+        await sleep(300);
+        await typeText("You're goddamn right.", '', 80);
+        await sleep(400);
+        await addBlank();
+        await addLine('Strong CS fundamentals — DSA, systems, cloud infra — backed by production engineering at <b>Emerson</b> and applied research under <b>DRDO-IRDE</b>. I work across the full stack: from <b>Rust low-latency services</b> to <b>Kubernetes cluster orchestration</b> to <b>LLM-powered agents</b>. Looking for SDE, AI/ML, and systems engineering roles.');
+        await addBlank();
+        await addLine('<span class="hi">↳ Education :</span>  B.Tech CSE · VNRVJIET · CGPA 9.05 / 10 · 2022–2026');
+        await addLine('<span class="hi">↳ Location  :</span>  Hyderabad, India');
+        await addLine('<span class="hi">↳ Open to   :</span>  SDE · Systems Engineering · AI/ML · Fintech · Research');
+        await addBlank();
+        await addLine('// click a command on the left or type below to explore ↓', 'comment');
+        await addBlank();
+      },
+
+      'ls --experience': async () => {
+        await addBlank();
+        await addLine('EXPERIENCE  //  ls --experience', 'heading');
+        await addLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'comment');
+        await addBlank();
+
+        // Emerson
+        await addLine('<span class="hi">[ 01 ]</span>  SDE (Agentic AI) Intern', 'subheading');
+        await addLine('<span class="hi">Company  :</span>  <b>Emerson</b>');
+        await addLine('<span class="hi">Period   :</span>  Jul 2025 – Present  ·  Hyderabad, India');
+        await addBlank();
+
+        const emWork = [
+          {
+            title: 'Invoicing System — React · FastAPI · C++ Engines',
+            desc: 'Reduced manual billing time by <b>90%</b>. Full-stack implementation with a React frontend, FastAPI orchestration layer, and C++ computation engines for high-throughput invoice generation.',
+          },
+          {
+            title: 'Session-Isolated Agentic Backend',
+            desc: 'Designed a backend service supporting <b>1,000+ concurrent users</b> with TTFT p95 latency under 3s. Deployed on fully local, in-house infrastructure to meet strict security constraints. Zero cloud egress.',
+          },
+          {
+            title: 'RAG Service — LangChain + FAISS',
+            desc: 'Built a retrieval-augmented generation service with optimized chunking and retrieval strategies, <b>improving answer accuracy</b> for internal knowledge base queries.',
+          },
+        ];
+        for (const w of emWork) {
+          const el = document.createElement('div');
+          el.className = 'proj-inline';
+          el.innerHTML = `<div class="p-name">▸ ${w.title}</div><div class="p-desc">${w.desc}</div>`;
+          term.appendChild(el);
+          term.scrollTop = term.scrollHeight;
+          await sleep(100);
+        }
+
+        await addBlank();
+
+        // DRDO
+        await addLine('<span class="hi">[ 02 ]</span>  Research Intern (Part-Time)', 'subheading');
+        await addLine('<span class="hi">Company  :</span>  <b>DRDO-IRDE</b> — Sanctioned Grant No. DFTM/034 (via VNR VJIET)');
+        await addLine('<span class="hi">Period   :</span>  Jan 2026 – Present  ·  Hyderabad, India');
+        await addBlank();
+
+        const metrics = [
+          { label: 'Scene Context Improvement', val: '150+%', pct: 82 },
+          { label: 'Inference Latency Reduction', val: '90%', pct: 90 },
+          { label: 'Structural Similarity (SSIM)', val: '92%', pct: 92 },
+        ];
+        for (const m of metrics) {
+          const row = document.createElement('div');
+          row.className = 'prog-row';
+          row.innerHTML = `<span class="prog-label">  ${m.label}</span><div class="prog-bar"><div class="prog-fill" style="width:0%" data-w="${m.pct}%"></div></div><span class="prog-val">${m.val}</span>`;
+          term.appendChild(row);
+          term.scrollTop = term.scrollHeight;
+          await sleep(80);
+        }
+        setTimeout(() => { document.querySelectorAll('.prog-fill').forEach(f => { f.style.width = f.dataset.w; }); }, 100);
+
+        await addBlank();
+        await addLine('Developed <b>Transformer models</b> restoring weather degradation in images. Used Image Enhancement Algorithms for scene context analysis. Network pruning + pipeline-level optimizations for latency reduction.');
+        await addBlank();
+      },
+
+      'ls --projects': async () => {
+        await addBlank();
+        await addLine('PROJECTS  //  selected work', 'heading');
+        await addLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'comment');
+        await addBlank();
+
+        const projects = [
+          {
+            name: 'KUBERNETES-NATIVE MULTI-STORE ORCHESTRATION',
+            tag: 'Cloud Infrastructure · AWS Deployment · Systems',
+            desc: 'Store provisioning platform enabling one-click creation and teardown of isolated WordPress e-commerce stores (namespace, secrets, PVCs). Idempotent lifecycle management across <b>100+ store instances</b> on a shared cluster.',
+            stack: 'React · Nginx · Helm · Redis · Docker · Kubernetes · AWS',
+            link: 'https://github.com/JVSHOMASVI',
+          },
+          {
+            name: 'REAL-TIME ORACLE PRICE FEED SYSTEM',
+            tag: 'Rust · Low-Latency · High Frequency Trade',
+            desc: 'Low-latency price ingestion service with <b>~40ms updates</b>. Redis caching, PostgreSQL storage, REST APIs, health checks, Prometheus observability. Svelte frontend for HFT operations.',
+            stack: 'Rust · Redis · PostgreSQL · Prometheus · Svelte',
+            link: 'https://github.com/JVSHOMASVI',
+          },
+          {
+            name: 'CUSUITE — WINDOWS ENVIRONMENT MANAGER',
+            tag: 'Systems · CUDA · DevOps Tooling',
+            desc: 'Automated GPU, driver, CUDA, and cuDNN version checks via system and NVIDIA APIs. <b>Reduced CUDA setup time by 80%</b>. Tested 30+ REST APIs for driver compatibility. Released v1.13.9-12 on GitHub.',
+            stack: 'Python · NVIDIA APIs · REST · Bash · Windows',
+            link: 'https://github.com/JVSHOMASVI',
+          },
+        ];
+
+        for (const p of projects) {
+          const el = document.createElement('div');
+          el.className = 'proj-inline';
+          el.innerHTML = `<div class="p-name">▸ ${p.name} <a href="${p.link}" target="_blank" style="font-size:.55rem;color:var(--muted);border:1px solid var(--border);padding:.1rem .4rem;margin-left:.5rem;text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--green)'" onmouseout="this.style.color='var(--muted)'">↗ github</a></div><div class="p-tag">${p.tag}</div><div class="p-desc">${p.desc}</div><div class="p-stack">// ${p.stack}</div>`;
+          term.appendChild(el);
+          term.scrollTop = term.scrollHeight;
+          await sleep(130);
+        }
+        await addBlank();
+      },
+
+      'cat skills.txt': async () => {
+        await addBlank();
+        await addLine('SKILLS  //  cat skills.txt', 'heading');
+        await addLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'comment');
+        await addBlank();
+
+        const groups = [
+          { cat: 'Languages', items: ['C', 'C++', 'Python', 'Java', 'JavaScript', 'Rust', 'Bash'] },
+          { cat: 'Frameworks', items: ['Spring Boot', 'React', 'Svelte', 'Express', 'FastAPI', 'Kafka', 'PyTorch'] },
+          { cat: 'Cloud & Infra', items: ['AWS', 'Docker', 'Kubernetes', 'Grafana', 'Terraform', 'GraphQL'] },
+          { cat: 'AI & Data', items: ['LangChain', 'MySQL', 'MariaDB', 'MongoDB', 'Redis', 'PostgreSQL'] },
+        ];
+
+        for (const g of groups) {
+          const line = document.createElement('div');
+          line.className = 't-line';
+          line.style.cssText = 'margin:.25rem 0; display:flex; flex-wrap:wrap; align-items:center; gap:.1rem;';
+          const label = document.createElement('span');
+          label.style.cssText = 'color:var(--amber);font-size:.62rem;width:110px;flex-shrink:0;display:inline-block;';
+          label.textContent = g.cat;
+          line.appendChild(label);
+          const pillsWrap = document.createElement('span');
+          pillsWrap.innerHTML = g.items.map(i => skillTag(i, LOGOS[i] || `${DEVICON}/python/python-original.svg`)).join('');
+          line.appendChild(pillsWrap);
+          term.appendChild(line);
+          term.scrollTop = term.scrollHeight;
+          await sleep(90);
+        }
+        await addBlank();
+      },
+
+      './open-source': async () => {
+        await addBlank();
+        await addLine('OPEN SOURCE  //  ./open-source --contributions', 'heading');
+        await addLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'comment');
+        await addBlank();
+        await addLine('PROJECT SARVADRUSHTI ─────────────────────────────────────', 'subheading');
+        await addLine('<span class="hi">Role   :</span>  Core Contributor (Systems and AI) · Feb 2024 – Oct 2024');
+        await addLine('<span class="hi">Status :</span>  Pre-incubated · Institutional grant procurement');
+        await addBlank();
+
+        const sarWork = [
+          'Built and validated Vision Enhancement algorithms for paramilitary use cases.',
+          'Built REST APIs and ingestion pipelines with sub-500ms latency, integrity checks, and fallback handling.',
+          'Conducted prototype development during pre-incubation for institutional grant procurement.',
+          'Implemented a modified CycleGAN improving model robustness by ~40% in low-visibility conditions.',
+        ];
+        for (const s of sarWork) {
+          const el = document.createElement('div');
+          el.className = 't-line';
+          el.style.cssText = 'padding:.2rem .5rem;border-left:2px solid var(--dim);margin:.2rem 0;font-size:.65rem;color:var(--muted);';
+          el.innerHTML = `<span style="color:var(--green)">▸</span> ${s}`;
+          term.appendChild(el);
+          term.scrollTop = term.scrollHeight;
+          await sleep(80);
+        }
+
+        await addBlank();
+        await addLine('EXTERNAL CONTRIBUTIONS ───────────────────────────────────', 'subheading');
+
+        const oss = [
+          { repo: 'NGAOpenData', pr: '#17', desc: 'Geospatial data tooling — open government dataset initiative' },
+          { repo: 'adenhq (YC 20)', pr: '#2348', desc: 'YC-backed productivity platform — agent infrastructure fix' },
+          { repo: 'Roboflow', pr: '#262', desc: 'Computer vision toolkit — dataset pipeline improvement' },
+          { repo: 'Mindscape', pr: '#14', desc: 'AI reasoning framework — context handling patch' },
+        ];
+
+        for (const o of oss) {
+          const el = document.createElement('div');
+          el.className = 't-line';
+          el.style.cssText = 'display:flex;gap:.8rem;padding:.3rem .5rem;align-items:baseline;';
+          el.innerHTML = `<span style="color:var(--green);font-size:.65rem;font-weight:700;width:140px;flex-shrink:0;">${o.repo}</span><span style="color:var(--amber);font-size:.62rem;width:50px;flex-shrink:0;">${o.pr}</span><span style="color:var(--muted);font-size:.62rem;">${o.desc}</span>`;
+          term.appendChild(el);
+          term.scrollTop = term.scrollHeight;
+          await sleep(70);
+        }
+        await addBlank();
+      },
+
+      'cat about.txt': async () => {
+        await addBlank();
+        await addLine('ABOUT  //  cat about.txt', 'heading');
+        await addLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'comment');
+        await addBlank();
+        await typeText("I care about systems that actually work under pressure — low latency, high concurrency, no excuses. Whether that's a Rust price feed handling HFT operations or a Kubernetes cluster provisioning stores on demand, the constraint is always the same: it has to be fast and it has to be correct.", '', 12);
+        await addBlank();
+        await typeText("I got into AI because the hard problems are at the intersection of systems and intelligence. You need a production-grade backend before an LLM agent is useful. You need infrastructure before research findings matter.", '', 12);
+        await addBlank();
+        await typeText("Currently at Emerson building agentic AI. Researching under DRDO. Looking for the next hard problem.", '', 18);
+        await addBlank();
+      },
+
+      'cat contact.txt': async () => {
+        await addBlank();
+        await addLine('CONTACT  //  cat contact.txt', 'heading');
+        await addLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'comment');
+        await addBlank();
+        await addLine('Open to: SDE roles · ML engineering · systems engineering · internships');
+        await addBlank();
+        await addLine('<span class="hi">email   :</span>  homasvi.kaneria.cg@gmail.com');
+        await addLine('<span class="hi">phone   :</span>  +91 9000081391');
+        await addLine('<span class="hi">github  :</span>  github.com/JVSHOMASVI');
+        await addLine('<span class="hi">linkedin:</span>  linkedin.com/in/adithya-jvsc');
+        await addLine('<span class="hi">location:</span>  Hyderabad, Telangana, IN');
+        await addBlank();
+        await addLine('// Open to conversations. Reach out.', 'comment');
+        await addBlank();
+      },
+
+      'help': async () => {
+        await addBlank();
+        await addLine('AVAILABLE COMMANDS  //  help', 'heading');
+        await addLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'comment');
+        await addBlank();
+        const cmds = [
+          ['whoami', 'identity, education, open to roles'],
+          ['ls --experience', 'DRDO + Emerson internship details'],
+          ['ls --projects', 'K8s platform, Oracle feed, cuSuite'],
+          ['cat skills.txt', 'full tech stack with logos'],
+          ['./open-source', 'Sarvadrushti + OSS contributions'],
+          ['cat about.txt', 'personal philosophy'],
+          ['cat contact.txt', 'get in touch'],
+          ['open --resume', 'open resume PDF'],
+          ['open --github', 'open GitHub profile'],
+          ['open --linkedin', 'open LinkedIn'],
+          ['open --email', 'compose email'],
+          ['clear', 'clear terminal output'],
+        ];
+        for (const [cmd, desc] of cmds) {
+          const el = document.createElement('div');
+          el.className = 't-line';
+          el.style.cssText = 'display:flex;gap:1rem;';
+          el.innerHTML = `<span style="color:var(--green);font-size:.65rem;width:160px;flex-shrink:0;">$ ${cmd}</span><span style="color:var(--muted);font-size:.63rem;">${desc}</span>`;
+          term.appendChild(el);
+          term.scrollTop = term.scrollHeight;
+          await sleep(40);
+        }
+        await sleep(40);
+        const sudoEl = document.createElement('div');
+        sudoEl.className = 't-line';
+        sudoEl.style.cssText = 'display:flex;gap:1rem;';
+        sudoEl.innerHTML = `<span style="color:var(--red);font-size:.65rem;width:160px;flex-shrink:0;">$ sudo</span><span style="color:var(--muted);font-size:.63rem;">???  <span style="color:var(--dim)">// you definitely wanna try this</span></span>`;
+        term.appendChild(sudoEl);
+        term.scrollTop = term.scrollHeight;
+        await sleep(40);
+        await addBlank();
+      },
+
+      'open --resume': async () => {
+        await addBlank();
+        await addLine('Opening resume ...', 'success');
+        await sleep(400);
+        window.open('https://drive.google.com/drive/folders/1zWQqDD7f7-jyz9aVqPC716AZx8vin-01?usp=sharing', '_blank');
+        await addBlank();
+      },
+      'open --github': async () => {
+        await addBlank();
+        await addLine('Opening github.com/JVSHomasvi...', 'success');
+        await sleep(400);
+        window.open('https://github.com/JVSHOMASVI', '_blank');
+        await addBlank();
+      },
+      'open --linkedin': async () => {
+        await addBlank();
+        await addLine('Opening linkedin.com/in/adithya-jvsc ...', 'success');
+        await sleep(400);
+        window.open('https://linkedin.com/in/adithya-jvsc', '_blank');
+        await addBlank();
+      },
+      'open --email': async () => {
+        await addBlank();
+        await addLine('Composing email to homasvi.kaneria.cg@gmail.com ...', 'success');
+        await sleep(400);
+        window.open('mailto:homasvi.kaneria.cg@gmail.com', '_blank');
+        await addBlank();
+      },
+      'clear': async () => {
+        term.innerHTML = '';
+      },
+    };
+
+    /* ═══════════════════════════════════════════════
+       COMMAND RUNNER
+    ═══════════════════════════════════════════════ */
+    const ALIASES = {
+      'skills': 'cat skills.txt',
+      'skill': 'cat skills.txt',
+      'stack': 'cat skills.txt',
+      'tech': 'cat skills.txt',
+      'projects': 'ls --projects',
+      'project': 'ls --projects',
+      'proj': 'ls --projects',
+      'work': 'ls --projects',
+      'exp': 'ls --experience',
+      'experience': 'ls --experience',
+      'jobs': 'ls --experience',
+      'job': 'ls --experience',
+      'research': 'ls --research',
+      'drdo': 'ls --research',
+      'about': 'cat about.txt',
+      'bio': 'cat about.txt',
+      'me': 'cat about.txt',
+      'contact': 'cat contact.txt',
+      'email': 'open --email',
+      'github': 'open --github',
+      'git': 'open --github',
+      'linkedin': 'open --linkedin',
+      'resume': 'open --resume',
+      'cv': 'open --resume',
+      'oss': './open-source',
+      'opensource': './open-source',
+    };
+    let tauntIdx = 0;
+    async function runCommand(cmd, silent = false) {
+      const trimmed = cmd.trim();
+      if (!trimmed) return;
+      if (busy) return;
+      busy = true;
+
+      // ── DESTROYED STATE — only save works ──
+      if (window._destroyed && trimmed.toLowerCase() !== 'save') {
+        const taunts = [
+          'lol. nothing works.',
+          'still broken. try save.',
+          'bro. SAVE.',
+          'you caused this. only you can save this.',
+          'interesting strategy. not working though.',
+          's-a-v-e. four letters.',
+          'the audacity to keep trying other commands.',
+          'this is not how computers work. or is it.',
+          'i admire the persistence. i really do.',
+        ];
+        await addLine(`<span style="color:var(--dim)">${taunts[tauntIdx % taunts.length]}</span>`);
+        tauntIdx++;
+        await addBlank();
+        (document.getElementById('sb-cmd') || {}).textContent = 'DESTROYED';
+        busy = false;
+        return;
+      }
+
+      // rm -rf only if sudo granted
+      if (trimmed.toLowerCase() === 'rm -rf' && !window._sudoGranted) {
+        if (!silent) await addPrompt(trimmed);
+        await addLine('permission denied. try <b>sudo</b> first.', 'err');
+        await addBlank();
+        busy = false;
+        return;
+      }
+
+      // save only if destroyed
+      if (trimmed.toLowerCase() === 'save' && !window._destroyed) {
+        if (!silent) await addPrompt(trimmed);
+        await addLine('nothing to save. system is fine.', 'comment');
+        await addBlank();
+        busy = false;
+        return;
+      }
+
+      const resolved = ALIASES[trimmed.toLowerCase()] ?? trimmed;
+
+      document.getElementById('sb-cmd').textContent = trimmed.toUpperCase();
+      // Update address bar
+      const addrEl = document.getElementById('addr-display');
+      if (addrEl) addrEl.textContent = 'C:\\PEGASUS_OS\\' + trimmed.replace(' ', '\\').replace('--', '');
+
+      document.querySelectorAll('.cmd-btn, .tb-btn').forEach(b => b.classList.remove('active'));
+      const btn = document.querySelector(`.cmd-btn[data-cmd="${resolved}"], .tb-btn[data-cmd="${resolved}"]`);
+      if (btn) btn.classList.add('active');
+
+      if (!silent) await addPrompt(trimmed);
+
+      const fn = COMMANDS[resolved];
+      if (fn) {
+        await fn();
+      } else {
+        const all = [...Object.keys(COMMANDS), ...Object.keys(ALIASES)];
+        const close = all.find(k => k.includes(trimmed.toLowerCase()) || trimmed.toLowerCase().includes(k.slice(0, 4)));
+        await addLine(`command not found: <span class="red">${trimmed}</span>`, 'err');
+        if (close) await addLine(`  → did you mean <b>${ALIASES[close] ?? close}</b>?`, 'warn');
+        else await addLine(`  → type <b>help</b> to see all commands`, 'warn');
+        await addBlank();
+      }
+
+      document.getElementById('sb-cmd').textContent = 'READY';
+      busy = false;
+    }
+
+    /* ═══════════════════════════════════════════════
+       INPUT HANDLING — typing, history, tab complete
+    ═══════════════════════════════════════════════ */
+    const input = document.getElementById('cmd-input');
+    const hintEl = document.getElementById('hint');
+    const cmdList = Object.keys(COMMANDS);
+    let history = [], histIdx = -1;
+    let passwordMode = false;
+    let passwordAttempts = 0;
+    window._sudoGranted = false;
+    window._destroyed = false;
+
+    document.querySelectorAll('.cmd-btn, .tb-btn').forEach(btn => {
+      btn.addEventListener('click', () => { if (!busy) { input.focus(); runCommand(btn.dataset.cmd); } });
+    });
+
+    const allCmds = [...Object.keys(COMMANDS), ...Object.keys(ALIASES), 'sudo', 'rm -rf', 'save'];
+
+    input.addEventListener('keydown', async (e) => {
+
+      // Ctrl+C — abort sudo
+      if (e.ctrlKey && e.key === 'c') {
+        if (passwordMode) {
+          e.preventDefault();
+          passwordMode = false;
+          passwordAttempts = 0;
+          input.type = 'text';
+          input.placeholder = 'type a command...';
+          input.value = '';
+          await addLine('^C', 'comment');
+          await addLine('sudo: aborted.', 'err');
+          await addBlank();
+          busy = false;
+        }
+        return;
+      }
+      if (e.key === 'Enter') {
+        const val = input.value.trim();
+        histIdx = -1;
+
+        if (passwordMode) {
+          const attempt = val;
+          input.value = '';
+          input.type = 'text';
+          input.placeholder = 'type a command...';
+
+          await addPrompt('*'.repeat(attempt.length || 1));
+
+          if (attempt.toLowerCase() === 'you') {
+            passwordMode = false;
+            passwordAttempts = 0;
+            window._sudoGranted = true;
+            await sleep(300);
+            await addLine('<span style="color:#008000">PERMISSION GRANTED.</span>');
+            await sleep(400);
+            await addLine('welcome. try <span style="color:var(--red)">rm -rf</span> — you\'ve earned it.', 'comment');
+            await addBlank();
+          } else {
+            passwordAttempts++;
+            const hints = [
+              'nope.',
+              'still no.',
+              'not even close.',
+              'hint: it\'s a pronoun.',
+              'hint: it\'s what you call others.',
+              'hint: rhymes with "blue".',
+              'hint: second person singular. one word.',
+              'ok i\'ll just spell it out — the password is literally <b>you</b>.',
+            ];
+            await addLine(`<span style="color:var(--red)">incorrect password (attempt ${passwordAttempts})</span>`);
+            await addLine(`<span style="color:var(--dim)">${hints[Math.min(passwordAttempts - 1, hints.length - 1)]}</span>`);
+            await addBlank();
+            input.type = 'password';
+            input.placeholder = 'try again...';
+          }
+          input.focus({ preventScroll: true });
+          return;
+          // if destroyed, only allow save
+        }
+
+        if (val) { history.unshift(val); if (history.length > 50) history.pop(); }
+        input.value = '';
+        hintEl.textContent = '// type a command below or click sidebar  ·  tab to autocomplete  ·  ↑↓ history';
+        await runCommand(val);
+        input.focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (histIdx < history.length - 1) { histIdx++; input.value = history[histIdx] || ''; }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (histIdx > 0) { histIdx--; input.value = history[histIdx] || ''; }
+        else { histIdx = -1; input.value = ''; }
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        const val = input.value.trim().toLowerCase();
+        const match = allCmds.find(c => c.startsWith(val) && c !== val);
+        if (match) input.value = match;
+      }
+    });
+
+
+
+    input.addEventListener('input', () => {
+      const val = input.value.trim().toLowerCase();
+      if (!val) { hintEl.textContent = '// type a command below or click sidebar  ·  tab to autocomplete  ·  ↑↓ history'; return; }
+      const match = allCmds.filter(c => c.startsWith(val));
+      if (match.length === 1) hintEl.textContent = `// tab → ${match[0]}  (${ALIASES[match[0]] ?? match[0]})`;
+      else if (match.length > 1) hintEl.textContent = `// matches: ${match.slice(0, 5).join('  ·  ')}`;
+      else hintEl.textContent = `// no match — type 'help' for commands`;
+    });
+    // Click anywhere on terminal to re-focus input
+    term.addEventListener('click', () => input.focus());
+
+    /* KICK OFF */
+    runBoot();
+  </script>
+</body>
+
+</html>
+
+

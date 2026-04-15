@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Terminals — homasvi.dev</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:#02050a;color:#b8dfff;font-family:'DM Mono',monospace;overflow:hidden;}
+
+/* noise */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");background-size:200px;pointer-events:none;z-index:0;opacity:0.4;}
+
+/* grid lines */
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(76,201,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(76,201,255,0.025) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+
+/* corner brackets */
+.corner{position:fixed;width:36px;height:36px;z-index:2;pointer-events:none;}
+.corner::before,.corner::after{content:'';position:absolute;background:rgba(76,201,255,0.35);}
+.corner::before{width:100%;height:1px;}
+.corner::after{width:1px;height:100%;}
+.corner-tl{top:22px;left:22px;}.corner-tl::before{top:0;left:0;}.corner-tl::after{top:0;left:0;}
+.corner-tr{top:22px;right:22px;}.corner-tr::before{top:0;right:0;}.corner-tr::after{top:0;right:0;}
+.corner-bl{bottom:22px;left:22px;}.corner-bl::before{bottom:0;left:0;}.corner-bl::after{bottom:0;left:0;}
+.corner-br{bottom:22px;right:22px;}.corner-br::before{bottom:0;right:0;}.corner-br::after{bottom:0;right:0;}
+
+/* stars */
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+/* back */
+.back{position:fixed;top:26px;left:68px;z-index:10;font-size:10px;color:rgba(184,223,255,0.25);text-decoration:none;letter-spacing:0.12em;text-transform:uppercase;transition:color .2s;}
+.back:hover{color:rgba(184,223,255,0.7);}
+
+/* label */
+.label{position:fixed;top:26px;right:32px;z-index:10;font-size:10px;color:rgba(76,201,255,0.22);letter-spacing:0.14em;text-transform:uppercase;}
+
+/* main */
+main{position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:70px 24px;}
+
+.title{font-family:'Syne',sans-serif;font-size:clamp(10px,1.1vw,12px);font-weight:700;letter-spacing:0.28em;text-transform:uppercase;color:rgba(76,201,255,0.22);margin-bottom:4px;}
+
+/* layout wrapper */
+.stack-wrap{display:flex;flex-direction:column;gap:10px;width:100%;max-width:660px;}
+.row{display:grid;gap:10px;}
+.row-2{grid-template-columns:1fr 1fr;}
+.row-1{grid-template-columns:1fr;max-width:324px;margin:0 auto;width:100%;}
+
+/* BASE BUTTON */
+.btn{
+  position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;
+  padding:24px 24px 20px;min-height:145px;
+  border:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.015);
+  text-decoration:none;overflow:hidden;cursor:pointer;
+  clip-path:polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 0 100%);
+  opacity:0;transform:translateY(18px);
+  transition:opacity .5s,transform .5s,border-color .25s,background .25s;
+}
+.btn.in{opacity:1;transform:translateY(0);}
+
+/* notch line */
+.btn::before{content:'';position:absolute;top:0;right:11px;width:16px;height:1px;transform-origin:right top;transform:rotate(45deg);transition:background .25s;}
+
+/* top accent bar */
+.btn-line{position:absolute;top:0;left:0;right:0;height:2px;transform:scaleX(0);transform-origin:left;transition:transform .38s cubic-bezier(.22,1,.36,1);}
+.btn:hover .btn-line,.btn.focused .btn-line{transform:scaleX(1);}
+
+/* glow */
+.btn-glow{position:absolute;width:180px;height:180px;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.2);opacity:0;pointer-events:none;filter:blur(36px);transition:transform .5s,opacity .5s;}
+.btn:hover .btn-glow,.btn.focused .btn-glow{transform:translate(-50%,-50%) scale(1.1);opacity:0.16;}
+
+/* scanline sweep */
+.btn-scan{position:absolute;left:0;right:0;height:45%;background:linear-gradient(180deg,transparent,rgba(255,255,255,0.022),transparent);top:-60%;pointer-events:none;transition:top .55s ease;}
+.btn:hover .btn-scan{top:120%;}
+
+/* num */
+.btn-num{position:absolute;top:16px;left:24px;font-size:9px;letter-spacing:0.1em;opacity:0.25;transition:opacity .2s;}
+.btn:hover .btn-num,.btn.focused .btn-num{opacity:0.6;}
+
+/* arrow */
+.btn-arrow{position:absolute;top:14px;right:18px;font-size:12px;opacity:0.15;transform:translate(0,0);transition:transform .25s,opacity .25s;}
+.btn:hover .btn-arrow,.btn.focused .btn-arrow{transform:translate(3px,-3px);opacity:0.75;}
+
+/* name */
+.btn-name{font-family:'Syne',sans-serif;font-size:clamp(18px,2.4vw,24px);font-weight:800;letter-spacing:-0.01em;line-height:1;margin-bottom:7px;transition:letter-spacing .3s;}
+.btn:hover .btn-name{letter-spacing:0.02em;}
+
+/* tag */
+.btn-tag{font-size:8px;letter-spacing:0.14em;text-transform:uppercase;line-height:1.5;opacity:0.35;transition:opacity .2s;}
+.btn:hover .btn-tag,.btn.focused .btn-tag{opacity:0.65;}
+
+/* PEGASUS — blue */
+.btn-pegasus{border-color:rgba(76,201,255,0.12);}
+.btn-pegasus::before{background:rgba(76,201,255,0.45);}
+.btn-pegasus .btn-line{background:linear-gradient(90deg,#4cc9ff,transparent);}
+.btn-pegasus:hover,.btn-pegasus.focused{border-color:rgba(76,201,255,0.38);background:rgba(76,201,255,0.04);}
+.btn-pegasus .btn-name{color:#4cc9ff;}
+.btn-pegasus .btn-num,.btn-pegasus .btn-arrow,.btn-pegasus .btn-tag{color:#4cc9ff;}
+.btn-pegasus .btn-glow{background:#4cc9ff;}
+
+/* EMBER — orange */
+.btn-ember{border-color:rgba(255,107,53,0.12);}
+.btn-ember::before{background:rgba(255,107,53,0.45);}
+.btn-ember .btn-line{background:linear-gradient(90deg,#ff6b35,transparent);}
+.btn-ember:hover,.btn-ember.focused{border-color:rgba(255,107,53,0.38);background:rgba(255,107,53,0.04);}
+.btn-ember .btn-name{color:#ff6b35;}
+.btn-ember .btn-num,.btn-ember .btn-arrow,.btn-ember .btn-tag{color:#ff6b35;}
+.btn-ember .btn-glow{background:#ff6b35;}
+
+/* ATOMS — violet */
+.btn-atoms{border-color:rgba(192,132,252,0.12);}
+.btn-atoms::before{background:rgba(192,132,252,0.45);}
+.btn-atoms .btn-line{background:linear-gradient(90deg,#c084fc,transparent);}
+.btn-atoms:hover,.btn-atoms.focused{border-color:rgba(192,132,252,0.38);background:rgba(192,132,252,0.04);}
+.btn-atoms .btn-name{color:#c084fc;}
+.btn-atoms .btn-num,.btn-atoms .btn-arrow,.btn-atoms .btn-tag{color:#c084fc;}
+.btn-atoms .btn-glow{background:#c084fc;}
+
+/* PHOSPHOR — amber */
+.btn-ph{border-color:rgba(255,179,0,0.12);}
+.btn-ph::before{background:rgba(255,179,0,0.45);}
+.btn-ph .btn-line{background:linear-gradient(90deg,#ffb300,transparent);}
+.btn-ph:hover,.btn-ph.focused{border-color:rgba(255,179,0,0.38);background:rgba(255,179,0,0.04);}
+.btn-ph .btn-name{color:#ffb300;}
+.btn-ph .btn-num,.btn-ph .btn-arrow,.btn-ph .btn-tag{color:#ffb300;}
+.btn-ph .btn-glow{background:#ffb300;}
+
+/* WIN_98 — white/silver, no notch */
+.btn-win{border-color:rgba(210,215,225,0.1);clip-path:none;}
+.btn-win::before{display:none;}
+.btn-win .btn-line{background:linear-gradient(90deg,#d2d7e1,transparent);}
+.btn-win:hover,.btn-win.focused{border-color:rgba(210,215,225,0.32);background:rgba(210,215,225,0.03);}
+.btn-win .btn-name{color:#d2d7e1;font-family:'DM Mono',monospace;font-size:clamp(14px,1.7vw,19px);letter-spacing:0.04em;}
+.btn-win .btn-num,.btn-win .btn-arrow,.btn-win .btn-tag{color:#d2d7e1;}
+.btn-win .btn-glow{background:#c8cdd8;}
+/* win98 scanlines */
+.btn-win .win-lines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.01) 2px,rgba(255,255,255,0.01) 4px);pointer-events:none;}
+
+/* hint */
+.hint{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(76,201,255,0.18);margin-top:2px;}
+
+@media(max-width:560px){
+  .row-2{grid-template-columns:1fr;}
+  .row-1{max-width:100%;}
+  .btn{min-height:110px;}
+  main{overflow-y:auto;justify-content:flex-start;padding-top:80px;}
+  html,body{overflow:auto;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<a href="../index.html" class="back">← back</a>
+<span class="label">Homasvi.K.dev / terminals</span>
+
+<main>
+  <div class="title">// select terminal environment</div>
+
+  <div class="stack-wrap">
+    <div class="row row-2">
+      <a class="btn btn-pegasus" href="terminal-stack.html" tabindex="0">
+        <div class="btn-line"></div><div class="btn-glow"></div><div class="btn-scan"></div>
+        <span class="btn-num">01</span><span class="btn-arrow">↗</span>
+        <div class="btn-name">STACK</div>
+        <div class="btn-tag">Blue</div>
+      </a>
+      <a class="btn btn-ember" href="terminal_ember.html" tabindex="0">
+        <div class="btn-line"></div><div class="btn-glow"></div><div class="btn-scan"></div>
+        <span class="btn-num">02</span><span class="btn-arrow">↗</span>
+        <div class="btn-name">EMBER</div>
+        <div class="btn-tag">Neon · Orange Core</div>
+      </a>
+    </div>
+    <div class="row row-2">
+      <a class="btn btn-atoms" href="terminal_atoms.html" tabindex="0">
+        <div class="btn-line"></div><div class="btn-glow"></div><div class="btn-scan"></div>
+        <span class="btn-num">03</span><span class="btn-arrow">↗</span>
+        <div class="btn-name">ATOMS</div>
+        <div class="btn-tag">Realm · Quantum UI</div>
+      </a>
+      <a class="btn btn-ph" href="terminal_ph.html" tabindex="0">
+        <div class="btn-line"></div><div class="btn-glow"></div><div class="btn-scan"></div>
+        <span class="btn-num">04</span><span class="btn-arrow">↗</span>
+        <div class="btn-name">PHOSPHOR</div>
+        <div class="btn-tag">Ph15 · CRT Glow</div>
+      </a>
+    </div>
+    <div class="row row-1">
+      <a class="btn btn-win" href="terminal_win98.html" tabindex="0">
+        <div class="win-lines"></div>
+        <div class="btn-line"></div><div class="btn-glow"></div><div class="btn-scan"></div>
+        <span class="btn-num">05</span><span class="btn-arrow">↗</span>
+        <div class="btn-name">WIN_98</div>
+        <div class="btn-tag">Old? · Retro Desktop</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="hint">↑↓←→ navigate · enter launch · 1–5 shortcut</div>
+</main>
+
+<script>
+/* STARS */
+(function(){
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  let phase=0;
+  const stars=[];
+  function init(){
+    c.width=innerWidth;c.height=innerHeight;
+    stars.length=0;
+    const rng=mulberry32(42);
+    for(let i=0;i<110;i++) stars.push({x:rng()*c.width,y:rng()*c.height,r:rng()*0.85+0.18,a:rng()*0.35+0.05,p:rng()*Math.PI*2});
+  }
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    phase+=0.004;
+    stars.forEach(s=>{
+      const a=s.a*(0.6+0.4*Math.sin(phase+s.p));
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(184,223,255,${a})`;ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',init);
+  init();draw();
+})();
+
+/* STAGGER IN */
+document.querySelectorAll('.btn').forEach((btn,i)=>{
+  setTimeout(()=>btn.classList.add('in'), 60+i*75);
+});
+
+/* KEYBOARD NAV */
+const btns=[...document.querySelectorAll('.btn')];
+const GRID=[[0,1],[2,3],[4]];
+let focused=-1;
+function posOf(i){for(let r=0;r<GRID.length;r++)for(let c=0;c<GRID[r].length;c++)if(GRID[r][c]===i)return{r,c};return{r:0,c:0};}
+function setFocus(i){
+  btns.forEach(b=>b.classList.remove('focused'));
+  focused=((i%btns.length)+btns.length)%btns.length;
+  btns[focused].classList.add('focused');
+  btns[focused].focus();
+}
+function clearFocus(){btns.forEach(b=>b.classList.remove('focused'));focused=-1;}
+
+document.addEventListener('keydown',e=>{
+  if(e.key>='1'&&e.key<='5'){btns[+e.key-1]?.click();return;}
+  if(e.key==='Escape'){clearFocus();return;}
+  if(['ArrowRight','ArrowLeft','ArrowUp','ArrowDown'].includes(e.key)){
+    e.preventDefault();
+    if(focused===-1){setFocus(0);return;}
+    const{r,c}=posOf(focused);
+    let nr=r,nc=c;
+    if(e.key==='ArrowRight')nc++;
+    if(e.key==='ArrowLeft')nc--;
+    if(e.key==='ArrowDown')nr++;
+    if(e.key==='ArrowUp')nr--;
+    nr=Math.max(0,Math.min(GRID.length-1,nr));
+    nc=Math.max(0,Math.min((GRID[nr].length||1)-1,nc));
+    setFocus(GRID[nr][nc]);return;
+  }
+  if(e.key==='Enter'&&focused>=0)btns[focused].click();
+});
+
+/* glow parallax */
+document.querySelectorAll('.btn').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{
+    const r=btn.getBoundingClientRect();
+    const x=((e.clientX-r.left)/r.width-0.5)*22;
+    const y=((e.clientY-r.top)/r.height-0.5)*22;
+    btn.querySelector('.btn-glow').style.transform=`translate(calc(-50% + ${x}px),calc(-50% + ${y}px)) scale(1.1)`;
+  });
+  btn.addEventListener('mouseleave',()=>{
+    btn.querySelector('.btn-glow').style.transform='translate(-50%,-50%) scale(0.2)';
+  });
+});
+</script>
+</body>
+</html>
