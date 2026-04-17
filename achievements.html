@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Achievements | Homasvi Kaneria</title>
+  <meta name="description" content="Homasvi's achievements and deep-dives" />
+  <link rel="icon" href="public/tess.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Geist:wght@100;200;300;400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style_warm.css" />
+  <script src="./script.js" defer></script>
+  <style>
+    /* Page specific overrides */
+    #achievements-page {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+    .back-link {
+      margin-bottom: 24px;
+    }
+    .back-link a {
+      color: var(--muted);
+      font-size: 13px;
+      font-family: 'DM Mono', monospace;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: inline-block;
+    }
+    .back-link a:hover {
+      color: var(--accent);
+      transform: translateX(-5px);
+    }
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+    @media (max-width: 768px) {
+      .achievements-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Reuse mosaic-card styles but specialized for a regular grid */
+    .achievement-card {
+      display: block;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      text-decoration: none;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .achievement-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-5px);
+      box-shadow: var(--glow-lg);
+    }
+    .achievement-source {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: block;
+    }
+    .achievement-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 24px;
+      font-style: italic;
+      color: var(--text);
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+    .achievement-desc {
+      font-family: 'Manrope', sans-serif;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .achievement-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .achievement-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      padding: 4px 10px;
+      background: rgba(212, 165, 90, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      color: var(--muted);
+    }
+    .achievement-cta {
+      margin-top: 24px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="cur"></div>
+  <div id="cur-r"></div>
+
+  <!-- ══════════════════════════════ NAVBAR ══════════════════════════════ -->
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Homasvi.K.dev</a>
+      <ul class="nav-center">
+        <li><a href="index.html#about" class="nav-link">About</a></li>
+        <li><a href="index.html#skills" class="nav-link">Stack</a></li>
+        <li class="has-dropdown">
+          <a href="#" class="nav-link">Work <span class="nav-arrow">▼</span></a>
+          <ul class="dropdown-menu">
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="index.html#hackathons">Hackathons</a></li>
+          </ul>
+        </li>
+        <li><a href="#" class="nav-link active">Achievements</a></li>
+        <li><a href="index.html#stats" class="nav-link">Stats</a></li>
+        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="nav-right">
+        <a href="https://drive.google.com/file/d/1MQNhCMwnRcg2915erQStpm0WcWC23Awp/view?usp=sharing" target="_blank" class="nav-link-sm">Resume ↗</a>
+        <a href="mailto:homasvi.kaneria.cg@gmail.com" class="nav-cta">Hire me</a>
+        <button class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="nav-drawer" id="drawer">
+    <a href="index.html#about">About</a>
+    <a href="index.html#skills">Stack</a>
+    <a href="projects.html">Projects</a>
+    <a href="achievements.html">Achievements</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+
+  <main id="achievements-page">
+    <div class="section-inner">
+      <div class="back-link fade-in">
+        <a href="index.html">← Back to Overview</a>
+      </div>
+      
+      <h2 class="fade-in">Accomplishments & Articles</h2>
+      <p class="section-sub fade-in" style="transition-delay:0.1s">
+        A deep-dive into how systems — human or otherwise — actually work. From technical papers to economic thought experiments.
+      </p>
+
+      <div class="achievements-grid fade-in" style="transition-delay:0.2s">
+        
+        <!-- Achievement 1 -->
+        <a href="https://medium.com/@adithya.jvsc/when-the-government-is-the-one-who-bought-everything-1fe98b5ee712" target="_blank" class="achievement-card">
+          <span class="achievement-source">Medium · Oct 2025</span>
+          <div class="achievement-title">When the Government is the One Who Bought Everything</div>
+          <p class="achievement-desc">Why private property is an illusion nested inside public sovereignty — and what happens when you follow that logic all the way down.</p>
+          <div class="achievement-tags">
+            <span class="achievement-tag">Political Economy</span>
+            <span class="achievement-tag">Thought Experiment</span>
+          </div>
+          <div class="achievement-cta">Read Article →</div>
+        </a>
+
+        <!-- Achievement 2 -->
+        <a href="https://medium.com/@adithya.jvsc/what-happens-if-you-could-secretly-print-2%C2%B9%E2%81%B0%E2%81%B0-usd-notes-a-thought-experiment-in-economics-7da4a85add4d" target="_blank" class="achievement-card">
+          <span class="achievement-source">Medium · Sep 2025</span>
+          <div class="achievement-title">What Happens if You Printed 2¹⁰⁰ USD Notes?</div>
+          <p class="achievement-desc">Even omnipotent wealth can't beat the invisible hand. The more you spend, the less your money buys. A study in hyperinflation feedback loops.</p>
+          <div class="achievement-tags">
+            <span class="achievement-tag">Economics</span>
+            <span class="achievement-tag">Market Systems</span>
+          </div>
+          <div class="achievement-cta">Read Article →</div>
+        </a>
+
+        <!-- Achievement 3 -->
+        <a href="https://www.linkedin.com/pulse/cusuite-install-fast-build-faster-v-s-homasvi-kaneria-wrcpc/" target="_blank" class="achievement-card">
+          <span class="achievement-source">LinkedIn · Technical Article</span>
+          <div class="achievement-title">cuSuite — Install Fast, Build Faster</div>
+          <p class="achievement-desc">Automated GPU, driver, and cuDNN version checks. Cut CUDA setup time by 80%. Tested across 30+ driver configurations. Released on GitHub.</p>
+          <div class="achievement-tags">
+            <span class="achievement-tag">DevOps</span>
+            <span class="achievement-tag">CUDA</span>
+            <span class="achievement-tag">GPU Computing</span>
+          </div>
+          <div class="achievement-cta">Read Case Study →</div>
+        </a>
+
+        <!-- Achievement 4 -->
+        <a href="https://www.reddit.com/r/commandline/comments/1rwydjy/i_made_a_terminal_video_ascii_player_that_uses/" target="_blank" class="achievement-card">
+          <span class="achievement-source">Reddit · r/commandline</span>
+          <div class="achievement-title">Terminal ASCII Video Player — True 24-bit Color</div>
+          <p class="achievement-desc">Renders video directly in the terminal using true 24-bit color output — sharper and more accurate than standard ANSI rendering.</p>
+          <div class="achievement-tags">
+            <span class="achievement-tag">CLI Tool</span>
+            <span class="achievement-tag">ASCII Art</span>
+            <span class="achievement-tag">Systems</span>
+          </div>
+          <div class="achievement-cta">View Community Post →</div>
+        </a>
+
+        <!-- Achievement 5 -->
+        <a href="https://www.linkedin.com/posts/project-sarvadrushti_ai-computervision-innovation-activity-7301635137543278592-3hrP" target="_blank" class="achievement-card">
+          <span class="achievement-source">LinkedIn · DRDO Grant</span>
+          <div class="achievement-title">Project Sarvadrushti — Field Vision Enhancement</div>
+          <p class="achievement-desc">Real-time fog and haze removal from optical feeds. Modified CycleGAN improved robustness for paramilitary use — directly led to DRDO grant.</p>
+          <div class="achievement-tags">
+            <span class="achievement-tag">Computer Vision</span>
+            <span class="achievement-tag">AI/ML</span>
+            <span class="achievement-tag">Research</span>
+          </div>
+          <div class="achievement-cta">View Project Details →</div>
+        </a>
+
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <span class="footer-name">V S Homasvi Kaneria</span>
+    <span class="footer-copy">© 2028 · v-1.0.0</span>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Intersection Observer for fade-in
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(x => { if(x.isIntersecting) x.target.classList.add('visible'); });
+      }, { threshold: 0.08 });
+      document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+    });
+  </script>
+</body>
+
+</html>

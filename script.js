@@ -210,34 +210,31 @@
     /* ── Active nav on scroll ── */
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-center .nav-link');
-    new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if(e.isIntersecting){
-          navLinks.forEach(l => l.classList.remove('active'));
-          const m = document.querySelector(`.nav-center a[href="#${e.target.id}"]`);
-          if(m) m.classList.add('active');
-        }
-      });
-    }, { rootMargin: '-40% 0px -55% 0px' }).observe;
-    sections.forEach(s => {
-      new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          if(e.isIntersecting){
-            navLinks.forEach(l => l.classList.remove('active'));
-            let targetId = e.target.id;
-            // Group projects and hackathons under "Work" parent nav
-            if(['projects', 'hackathons'].includes(targetId)) {
-                const workLink = document.querySelector('.nav-center .has-dropdown > .nav-link');
-                if(workLink) workLink.classList.add('active');
-            } else {
-                const m = document.querySelector(`.nav-center a[href="#${targetId}"]`);
-                if(m) m.classList.add('active');
-            }
+    
+    if (sections.length > 0) {
+      sections.forEach(s => {
+        new IntersectionObserver(entries => {
+          entries.forEach(e => {
+            if(e.isIntersecting){
+              let targetId = e.target.id;
+              let activeLink = null;
 
-          }
-        });
-      }, { rootMargin: '-40% 0px -55% 0px' }).observe(s);
-    });
+              // Group projects and hackathons under "Work" parent nav
+              if(['projects', 'hackathons'].includes(targetId)) {
+                  activeLink = document.querySelector('.nav-center .has-dropdown > .nav-link');
+              } else {
+                  activeLink = document.querySelector(`.nav-center a[href="#${targetId}"]`);
+              }
+
+              if (activeLink) {
+                navLinks.forEach(l => l.classList.remove('active'));
+                activeLink.classList.add('active');
+              }
+            }
+          });
+        }, { rootMargin: '-40% 0px -55% 0px' }).observe(s);
+      });
+    }
 
 
     /* ── Hamburger ── */

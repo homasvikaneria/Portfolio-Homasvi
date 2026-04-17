@@ -166,6 +166,19 @@
   main { position: relative; z-index: 1; }
   section { padding: 68px 0; width: 100%; }
   .section-inner { max-width: 1200px; margin: 0 auto; }
+  .section-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 768px) {
+    .section-header-flex {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+  }
 
   .divider { padding: 0 var(--pad); }
   .divider hr { border: none; border-top: 1px solid var(--border); max-width: 1200px; margin: 0 auto; }
@@ -477,6 +490,63 @@
   }
   .tech-pill img { width: 11px; height: 11px; object-fit: contain; opacity: 0.75; }
   .project-arrow { font-size: 18px; color: var(--dim); transition: transform 0.2s, color 0.2s; flex-shrink: 0; margin-left: 8px; }
+
+  /* Filtering & CTA */
+  .projects-cta {
+    margin-top: 48px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+  }
+
+  .filter-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    background: var(--bg1);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .filter-btn:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    background: rgba(212, 165, 90, 0.05);
+  }
+
+  .filter-btn.active {
+    background: var(--accent);
+    color: #070503;
+    border-color: var(--accent);
+    font-weight: 700;
+    box-shadow: var(--glow);
+  }
+
+  /* Card Filtering Transition */
+  .project-card {
+    transition: opacity 0.4s ease, transform 0.4s ease, background 0.2s, border-color 0.2s, box-shadow 0.2s !important;
+  }
+
+  .project-card.filter-hide {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+    pointer-events: none;
+    position: absolute;
+    visibility: hidden;
+  }
 
   .stats-grid {
     display: grid;

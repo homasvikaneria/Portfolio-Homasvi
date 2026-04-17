@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects | Homasvi Kaneria</title>
+  <meta name="description" content="Homasvi's projects - SDE & AI Engineer" />
+  <link rel="icon" href="public/tess.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Geist:wght@100;200;300;400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300..700&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style_warm.css" />
+  <script src="./script.js" defer></script>
+  <style>
+    /* Page specific overrides */
+    #projects-page {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
+    }
+    @media (max-width: 768px) {
+      .projects-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .back-link {
+      margin-bottom: 24px;
+    }
+    .back-link a {
+      color: var(--muted);
+      font-size: 13px;
+      font-family: 'DM Mono', monospace;
+      text-decoration: none;
+      transition: color 0.2s, transform 0.2s;
+      display: inline-block;
+    }
+    .back-link a:hover {
+      color: var(--accent);
+      transform: translateX(-5px);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="cur"></div>
+  <div id="cur-r"></div>
+
+  <!-- ══════════════════════════════ NAVBAR ══════════════════════════════ -->
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Homasvi.K.dev</a>
+      <ul class="nav-center">
+        <li><a href="index.html#about" class="nav-link">About</a></li>
+        <li><a href="index.html#skills" class="nav-link">Stack</a></li>
+        <li class="has-dropdown">
+          <a href="#" class="nav-link active">Work <span class="nav-arrow">▼</span></a>
+          <ul class="dropdown-menu">
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="index.html#hackathons">Hackathons</a></li>
+          </ul>
+        </li>
+
+        <li><a href="index.html#achievements" class="nav-link">Achievements</a></li>
+        <li><a href="index.html#stats" class="nav-link">Stats</a></li>
+
+        <li><a href="index.html#terminal-section" class="nav-link">Terminal</a></li>
+        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+
+      </ul>
+      <div class="nav-right">
+
+        <a href="https://drive.google.com/file/d/1MQNhCMwnRcg2915erQStpm0WcWC23Awp/view?usp=sharing" target="_blank"
+          class="nav-link-sm">
+
+          <span class="link-text">Resume ↗</span>
+          <span class="link-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="8" y1="13" x2="16" y2="13" />
+              <line x1="8" y1="17" x2="16" y2="17" />
+              <line x1="8" y1="9" x2="10" y2="9" />
+            </svg>
+          </span>
+        </a>
+
+        <a href="mailto:homasvi.kaneria.cg@gmail.com" class="nav-cta">Hire me</a>
+        <button class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+  <div class="nav-drawer" id="drawer">
+    <a href="index.html#about">About</a>
+    <a href="index.html#skills">Stack</a>
+    <a href="projects.html">Projects</a>
+    <a href="index.html#hackathons">Hackathons</a>
+    <a href="index.html#achievements">Achievements</a>
+    <a href="index.html#stats">Stats</a>
+
+    <a href="index.html#terminal-section">Terminal</a>
+
+    <a href="index.html#contact">Contact</a>
+
+
+    <a href="mailto:homasvi.kaneria.cg@gmail.com" class="drawer-cta">Hire me</a>
+  </div>
+
+  <main id="projects-page">
+    <div class="section-inner">
+      <div class="back-link fade-in">
+        <a href="index.html">← Back to Overview</a>
+      </div>
+      <h2 class="fade-in">All Projects</h2>
+      <p class="section-sub fade-in" style="transition-delay:0.1s">
+        A collection of systems, tools, and experiments built with performance and scale in mind.
+      </p>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar fade-in" style="transition-delay:0.15s">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="frontend">Frontend</button>
+        <button class="filter-btn" data-filter="backend">Backend</button>
+        <button class="filter-btn" data-filter="fullstack">Full Stack</button>
+        <button class="filter-btn" data-filter="mobile">Mobile</button>
+        <button class="filter-btn" data-filter="uiux">UI/UX</button>
+      </div>
+
+      <!-- Projects Grid -->
+      <div class="projects-grid fade-in" style="transition-delay:0.2s" id="projects-grid">
+        
+        <!-- Project 01 -->
+        <a class="project-card" href="https://github.com/JVSHOMASVI/SendStores" target="_blank" data-category="fullstack">
+          <div class="project-top">
+            <div class="project-meta"><span class="project-num">01</span><span class="project-tag live">Infra</span></div>
+            <div class="project-title">K8s Multi-Store Orchestration Platform</div>
+            <div class="project-desc">One-click provision and teardown of isolated WordPress stores across 100+ instances — namespaced, secret-managed, PVC-bound.</div>
+          </div>
+          <div class="project-bottom">
+            <div class="project-tech">
+              <span class="tech-pill">K8s</span>
+              <span class="tech-pill">React</span>
+              <span class="tech-pill">Docker</span>
+              <span class="tech-pill">Redis</span>
+            </div>
+            <div class="project-arrow">↗</div>
+          </div>
+        </a>
+
+        <!-- Project 02 -->
+        <a class="project-card" href="https://github.com/JVSHOMASVI/Low-Latency-HFT-Data-Engine-with-Oracle-Aggregation" target="_blank" data-category="backend">
+          <div class="project-top">
+            <div class="project-meta"><span class="project-num">02</span><span class="project-tag hft">HFT</span></div>
+            <div class="project-title">Real-Time Oracle Price Feed</div>
+            <div class="project-desc">~40ms price ingestion latency for HFT operations. Redis caching layer, PostgreSQL persistence, Prometheus metrics.</div>
+          </div>
+          <div class="project-bottom">
+            <div class="project-tech">
+              <span class="tech-pill">Rust</span>
+              <span class="tech-pill">Redis</span>
+              <span class="tech-pill">Svelte</span>
+            </div>
+            <div class="project-arrow">↗</div>
+          </div>
+        </a>
+
+        <!-- Project 03 -->
+        <a class="project-card" href="https://github.com/JVSHOMASVI/cuSuite" target="_blank" data-category="backend">
+          <div class="project-top">
+            <div class="project-meta"><span class="project-num">03</span><span class="project-tag oss">OSS</span></div>
+            <div class="project-title">cuSuite — CUDA Environment Manager</div>
+            <div class="project-desc">GPU, driver, CUDA, and cuDNN version automation via NVIDIA system APIs. 80% setup time reduction.</div>
+          </div>
+          <div class="project-bottom">
+            <div class="project-tech">
+              <span class="tech-pill">Python</span>
+              <span class="tech-pill">Bash</span>
+              <span class="tech-pill">NVIDIA API</span>
+            </div>
+            <div class="project-arrow">↗</div>
+          </div>
+        </a>
+
+        <!-- Project 04 -->
+        <a class="project-card" href="https://github.com/JVSHOMASVI/Terrain-Analyzer-PSD4-Chandrayaan" target="_blank" data-category="fullstack">
+          <div class="project-top">
+            <div class="project-meta"><span class="project-num">04</span><span class="project-tag space">Space · CV</span></div>
+            <div class="project-title">Lunar Terrain Analyzer — Chandrayaan-2</div>
+            <div class="project-desc">Crater and boulder detection pipeline for Chandrayaan-2 orbital imagery using YOLO inference on massive datasets.</div>
+          </div>
+          <div class="project-bottom">
+            <div class="project-tech">
+              <span class="tech-pill">Python</span>
+              <span class="tech-pill">PyTorch</span>
+              <span class="tech-pill">OpenCV</span>
+              <span class="tech-pill">Streamlit</span>
+            </div>
+            <div class="project-arrow">↗</div>
+          </div>
+        </a>
+
+        <!-- Project 05 -->
+        <a class="project-card" href="https://github.com/JVSHOMASVI/buddy" target="_blank" data-category="backend">
+          <div class="project-top">
+            <div class="project-meta"><span class="project-num">05</span><span class="project-tag infra">CLI · Systems</span></div>
+            <div class="project-title">Buddy - Video in Terminal</div>
+            <div class="project-desc">Renders video in-terminal using Unicode half-blocks + full RGB ANSI escapes. Vectorized, area-averaged downscaling.</div>
+          </div>
+          <div class="project-bottom">
+            <div class="project-tech">
+              <span class="tech-pill">Python</span>
+              <span class="tech-pill">NumPy</span>
+              <span class="tech-pill">Bash</span>
+            </div>
+            <div class="project-arrow">↗</div>
+          </div>
+        </a>
+
+        <!-- Project 06 -->
+        <a class="project-card" href="https://github.com/JVSHOMASVI/Invoice_DB_Bot" target="_blank" data-category="fullstack">
+          <div class="project-top">
+            <div class="project-meta"><span class="project-num">06</span><span class="project-tag agentic-erp">Agentic</span></div>
+            <div class="project-title">Invoice DB Bot — Automated ERP System</div>
+            <div class="project-desc">Full ERP invoicing system with local LLM inference via llama.cpp — zero data egress. Modular engine architecture.</div>
+          </div>
+          <div class="project-bottom">
+            <div class="project-tech">
+              <span class="tech-pill">FastAPI</span>
+              <span class="tech-pill">React</span>
+              <span class="tech-pill">llama.cpp</span>
+            </div>
+            <div class="project-arrow">↗</div>
+          </div>
+        </a>
+
+        <!-- Add placeholders for missing categories -->
+        <!-- Project 07 (Frontend) -->
+        <a class="project-card" href="#" target="_blank" data-category="frontend">
+          <div class="project-top">
+            <div class="project-meta"><span class="project-num">07</span><span class="project-tag design">Design</span></div>
+            <div class="project-title">Smart Portfolio Engine</div>
+            <div class="project-desc">A highly customizable, performant portfolio theme with glassmorphism and advanced particle animations.</div>
+          </div>
+          <div class="project-bottom">
+            <div class="project-tech">
+              <span class="tech-pill">React</span>
+              <span class="tech-pill">Framer Motion</span>
+              <span class="tech-pill">Three.js</span>
+            </div>
+            <div class="project-arrow">↗</div>
+          </div>
+        </a>
+
+        <!-- Project 08 (Mobile) -->
+        <a class="project-card" href="#" target="_blank" data-category="mobile">
+          <div class="project-top">
+            <div class="project-meta"><span class="project-num">08</span><span class="project-tag mobile">Mobile</span></div>
+            <div class="project-title">FinTrack Mobile App</div>
+            <div class="project-desc">Cross-platform expense tracker with real-time sync, offline mode, and interactive financial charts.</div>
+          </div>
+          <div class="project-bottom">
+            <div class="project-tech">
+              <span class="tech-pill">React Native</span>
+              <span class="tech-pill">Firebase</span>
+              <span class="tech-pill">Redux</span>
+            </div>
+            <div class="project-arrow">↗</div>
+          </div>
+        </a>
+
+        <!-- Project 09 (UIUX) -->
+        <a class="project-card" href="#" target="_blank" data-category="uiux">
+          <div class="project-top">
+            <div class="project-meta"><span class="project-num">09</span><span class="project-tag design">Figma</span></div>
+            <div class="project-title">Glass UI Design System</div>
+            <div class="project-desc">A comprehensive design system for modern web apps focusing on depth, translucency, and vibrant colors.</div>
+          </div>
+          <div class="project-bottom">
+            <div class="project-tech">
+              <span class="tech-pill">Figma</span>
+              <span class="tech-pill">Design System</span>
+            </div>
+            <div class="project-arrow">↗</div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <span class="footer-name">V S Homasvi Kaneria</span>
+    <span class="footer-copy">© 2028 · v-1.0.0</span>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const projects = document.querySelectorAll('.project-card');
+
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Remove active class from all buttons
+          filterBtns.forEach(b => b.classList.remove('active'));
+          // Add active class to clicked button
+          btn.classList.add('active');
+
+          const filterValue = btn.getAttribute('data-filter');
+
+          projects.forEach(project => {
+            const category = project.getAttribute('data-category');
+            
+            if (filterValue === 'all' || category === filterValue) {
+              project.classList.remove('filter-hide');
+              // Small timeout to allow the display: block to take effect before opacity change
+              setTimeout(() => {
+                project.style.position = 'relative';
+                project.style.visibility = 'visible';
+                project.style.opacity = '1';
+                project.style.transform = 'scale(1) translateY(0)';
+              }, 10);
+            } else {
+              project.style.opacity = '0';
+              project.style.transform = 'scale(0.95) translateY(10px)';
+              setTimeout(() => {
+                project.classList.add('filter-hide');
+              }, 400); // match CSS transition duration
+            }
+          });
+        });
+      });
+
+      // Initial animation for cards on page load
+      setTimeout(() => {
+        document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
+      }, 100);
+    });
+  </script>
+</body>
+
+</html>
