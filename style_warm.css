@@ -327,13 +327,13 @@
 
   .about-sidebar { display: flex; flex-direction: column; gap: 16px; }
   .stat {
-    padding: 22px 24px; border: 1px solid var(--border); border-radius: 12px;
-    background: var(--bg1); transition: border-color 0.2s, background 0.2s;
+    padding: 36px 40px; border: 2px solid var(--border); border-radius: 16px;
+    background: var(--bg1); transition: all 0.3s ease;
   }
-  .stat:hover { border-color: var(--border-hover); background: var(--bg2); box-shadow: var(--glow-lg); }
-  .stat-num { font-size: 38px; font-weight: 800; color: var(--text); letter-spacing: -0.05em; line-height: 1; margin-bottom: 6px; }
+  .stat:hover { border-color: var(--accent); background: var(--bg2); box-shadow: var(--glow-lg); transform: translateY(-4px); }
+  .stat-num { font-size: 64px; font-weight: 800; color: var(--text); letter-spacing: -0.05em; line-height: 1; margin-bottom: 8px; }
   .stat-num span { color: var(--accent); text-shadow: var(--glow); }
-  .stat-label { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+  .stat-label { font-size: 14px; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; }
 
   /* ══════════════════════════════
      SKILLS
@@ -351,12 +351,12 @@
   }
   .skill-pills { display: flex; flex-wrap: wrap; gap: 8px; }
   .skill-pill {
-    display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
-    border: 1px solid var(--border); border-radius: 5px; font-size: 11px;
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+    border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
     color: var(--muted); background: rgba(212,165,90,0.02); transition: all 0.2s;
   }
-  .skill-pill:hover { border-color: var(--border-hover); color: var(--text); background: rgba(212,165,90,0.07); }
-  .skill-pill img { width: 13px; height: 13px; object-fit: contain; opacity: 0.8; }
+  .skill-pill:hover { border-color: var(--accent); color: var(--text); background: rgba(212,165,90,0.07); transform: scale(1.04); }
+  .skill-pill img { width: 16px; height: 16px; object-fit: contain; opacity: 0.85; }
 
   /* ══════════════════════════════
      EXPERIENCE
